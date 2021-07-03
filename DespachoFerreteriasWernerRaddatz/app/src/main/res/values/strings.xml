@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">Despacho Ferreterías Werner &amp; Raddatz</string>
+    <string-array name="labor">
+        <item>Bodega</item>
+        <item>Camión</item>
+    </string-array>
+    <string-array name="destino">
+        <item>Local</item>
+        <item>Chiloé</item>
+        <item>Llanquihue</item>
+    </string-array>
+    <string-array name="chofer">
+        <item>Chofer1</item>
+        <item>Chofer2</item>
+    </string-array>
+    <string-array name="nomina">
+        <item>Factura1</item>
+        <item>Guia1</item>
+    </string-array>
+    <string-array name="viaje">
+        <item>Viaje ID001 Puerto Montt</item>
+        <item>Viaje ID002 Llanquihue</item>
+        <item>Viaje ID003 Isla Chiloé</item>
+    </string-array>
+
+</resources>
