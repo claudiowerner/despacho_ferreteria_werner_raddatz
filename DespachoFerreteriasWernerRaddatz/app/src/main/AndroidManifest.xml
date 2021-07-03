@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.example.despachoferreteriaswernerraddatz">
+
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
 
     <application
         android:allowBackup="true"
@@ -13,9 +16,7 @@
         <activity
             android:name=".ActivityPrimerUso"
             android:screenOrientation="portrait" /> <!-- definición de pantalla estática -->
-        <activity
-            android:name=".ActivityRegistroPaquete"
-            android:screenOrientation="portrait" /> <!-- definición de pantalla estática -->
+        <!-- definición de pantalla estática -->
         <activity
             android:name=".ActivityNomina"
             android:screenOrientation="portrait" /> <!-- definición de pantalla estática -->
