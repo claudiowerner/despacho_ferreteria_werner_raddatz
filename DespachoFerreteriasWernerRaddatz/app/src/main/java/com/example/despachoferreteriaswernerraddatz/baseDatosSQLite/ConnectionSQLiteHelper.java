@@ -9,8 +9,9 @@ import androidx.annotation.Nullable;
 public class ConnectionSQLiteHelper extends SQLiteOpenHelper
 {
 
-     public ConnectionSQLiteHelper(@Nullable Context context, @Nullable String name, @Nullable SQLiteDatabase.CursorFactory factory, int version) {
+    public ConnectionSQLiteHelper(@Nullable Context context, @Nullable String name, @Nullable SQLiteDatabase.CursorFactory factory, int version) {
         super (context, name, factory, version);
+
     }
 
     @Override
