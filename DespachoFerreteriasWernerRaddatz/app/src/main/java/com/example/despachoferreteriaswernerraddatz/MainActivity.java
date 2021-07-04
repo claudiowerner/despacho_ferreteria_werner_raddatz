@@ -44,25 +44,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView (R.layout.activity_main);
 
 
-
-        //llamada a la clase ConnectionSQLiteHelper.java
-
-        ConnectionSQLiteHelper conn = new ConnectionSQLiteHelper (this, "bd_interna_despacho_wyr",null,1);
-        /* DESCRIPCION LLAMADA A CLASE ConnectionSQLiteHelper.java
-        *   (context: this): Es una clase abstracta que implementa Android. Permite acceder a los recursos específicos
-        * de la aplicación y a sus clases, así como llamar al padre para realizar operaciones a nivel de la aplicación,
-        * como lanzar Activities, difundir mensajes por el sistema, recibir Intents, etc.
-        *
-        * (name: "bd_interna_despacho_wyr"): le da el nombre a la base de datos que se creará
-        *
-        * (factory: null):
-        *
-        * (version: 1): indica la versión de la base de datos
-        * */
-
-        SQLiteDatabase sqlBD = conn.getWritableDatabase (); //sentencia que crea la base de datos
-
-
         //llamada a la activity ActivityPrimerUso
         Intent intent = new Intent (this, ActivityPrimerUso.class);
 
@@ -165,12 +146,31 @@ public class MainActivity extends AppCompatActivity {
 
     private void onNetworkChange(NetworkInfo networkInfo) {
         if (networkInfo != null) {
-            if (networkInfo.getState() == NetworkInfo.State.CONNECTED) {
+            if (networkInfo.getState() == NetworkInfo.State.CONNECTED)
+            {
                 Toast.makeText (this, "CONECTADO: El almacenamiento remoto está activado.", Toast.LENGTH_SHORT).show ();
-            } else {
+            }
+            else
+            {
                 Toast.makeText (this, "DESCONECTADO: El almacenamiento local está activado.", Toast.LENGTH_SHORT).show ();
+                //llamada a la clase ConnectionSQLiteHelper.java
+
+                ConnectionSQLiteHelper conn = new ConnectionSQLiteHelper (this, "bd_interna_despacho_wyr",null,1);
+                /* DESCRIPCION LLAMADA A CLASE ConnectionSQLiteHelper.java
+                 *   (context: this): Es una clase abstracta que implementa Android. Permite acceder a los recursos específicos
+                 * de la aplicación y a sus clases, así como llamar al padre para realizar operaciones a nivel de la aplicación,
+                 * como lanzar Activities, difundir mensajes por el sistema, recibir Intents, etc.
+                 *
+                 * (name: "bd_interna_despacho_wyr"): le da el nombre a la base de datos que se creará
+                 *
+                 * (factory: null):
+                 *
+                 * (version: 1): indica la versión de la base de datos
+                 * */
+
+                SQLiteDatabase sqlBD = conn.getWritableDatabase (); //sentencia que crea la base de datos
+
             }
         }
     }
-
 }
