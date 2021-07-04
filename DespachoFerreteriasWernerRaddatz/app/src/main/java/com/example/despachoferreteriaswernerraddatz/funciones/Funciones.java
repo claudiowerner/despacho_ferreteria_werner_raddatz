@@ -32,4 +32,5 @@ public class Funciones
         }
         return numDocumento;
     }
+
 }

@@ -9,12 +9,14 @@ import androidx.annotation.Nullable;
 public class ConnectionSQLiteHelper extends SQLiteOpenHelper
 {
 
-    String scriptBD = "CREATE TABLE caja_estado (\n" +
+    String scriptBD =
+            "CREATE TABLE caja_estado (\n" +
             "    cod_barra_caja   VARCHAR(30) \n" +
             "--  ERROR: VARCHAR2 size not specified \n" +
             "     NOT NULL,\n" +
             "    estatus          NUMERIC(1)\n" +
-            ");\n" +
+            ");" +
+                    "\n" +
             "\n" +
             "ALTER TABLE caja_estado ADD CONSTRAINT caja_estado_pk PRIMARY KEY ( cod_barra_caja );\n" +
             "\n" +

@@ -3,7 +3,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.despachoferreteriaswernerraddatz">
 
+
+    <!--Permiso para obtener datos internos del teléfono como IDs-->
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+
+    <!--Permiso para acceder al estado de conexión a internet-->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:allowBackup="true"
