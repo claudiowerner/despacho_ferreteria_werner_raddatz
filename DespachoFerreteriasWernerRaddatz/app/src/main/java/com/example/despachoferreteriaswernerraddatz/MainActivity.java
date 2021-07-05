@@ -2,24 +2,17 @@ package com.example.despachoferreteriaswernerraddatz;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-
-import android.Manifest;
-import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.provider.Telephony;
-import android.telephony.TelephonyManager;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -29,13 +22,10 @@ import com.example.despachoferreteriaswernerraddatz.funciones.Funciones;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
-import java.util.StringTokenizer;
-import java.util.UUID;
-
 public class MainActivity extends AppCompatActivity {
 
     private Button btnRevision, btnDespacho, btnCarga, btnEntrega, btnNomina, btnCrearViaje, btnModificarViaje;
-    Funciones fun = new Funciones();
+    Funciones fun = new Funciones ();
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
@@ -54,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
         btnCarga = findViewById (R.id.btnCarga);
         btnEntrega = findViewById (R.id.btnEntrega);
 
-        Toast.makeText (this, "IMEI: " + obtenerAndroidID(this), Toast.LENGTH_LONG).show ();
+        Toast.makeText (this, "IMEI: " + obtenerAndroidID (this), Toast.LENGTH_LONG).show ();
 
         //acciones botón revisión
         btnRevision.setOnClickListener (new View.OnClickListener () {
@@ -103,66 +93,57 @@ public class MainActivity extends AppCompatActivity {
         IntentResult result = IntentIntegrator.parseActivityResult (requestCode, resultCode, data);
 
         if (result != null) {
-            if (result.getContents () == null)
-            {
+            if (result.getContents () == null) {
                 Toast.makeText (this, "Lectura cancelada", Toast.LENGTH_LONG).show ();
+            } else {
+                Toast.makeText (this, "Cod. barra: " + fun.tokenizer (result.getContents ()), Toast.LENGTH_LONG).show ();
             }
-            else
-            {
-                Toast.makeText (this, "Cod. barra: "+fun.tokenizer (result.getContents ()),Toast.LENGTH_LONG).show ();
-            }
-        }
-        else
-        {
+        } else {
             super.onActivityResult (requestCode, resultCode, data);
         }
     }
 
 
     private String obtenerAndroidID(Context context) {
-        return Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+        return Settings.Secure.getString (context.getContentResolver (), Settings.Secure.ANDROID_ID);
     }
 
-    private BroadcastReceiver networkStateReceiver = new BroadcastReceiver() {
+    private BroadcastReceiver networkStateReceiver = new BroadcastReceiver () {
         @Override
         public void onReceive(Context context, Intent intent) {
-            ConnectivityManager manager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-            NetworkInfo ni = manager.getActiveNetworkInfo();
-            onNetworkChange(ni);
+            ConnectivityManager manager = (ConnectivityManager) context.getSystemService (Context.CONNECTIVITY_SERVICE);
+            NetworkInfo ni = manager.getActiveNetworkInfo ();
+            onNetworkChange (ni);
         }
     };
 
     @Override
     public void onResume() {
-        super.onResume();
-        registerReceiver(networkStateReceiver, new IntentFilter (android.net.ConnectivityManager.CONNECTIVITY_ACTION));
+        super.onResume ();
+        registerReceiver (networkStateReceiver, new IntentFilter (android.net.ConnectivityManager.CONNECTIVITY_ACTION));
     }
 
     @Override
     public void onPause() {
-        unregisterReceiver(networkStateReceiver);
-        super.onPause();
+        unregisterReceiver (networkStateReceiver);
+        super.onPause ();
     }
 
     private void onNetworkChange(NetworkInfo networkInfo) {
         if (networkInfo != null) {
-            if (networkInfo.getState() == NetworkInfo.State.CONNECTED)
-            {
+            if (networkInfo.getState () == NetworkInfo.State.CONNECTED) {
                 Toast.makeText (this, "CONECTADO: El almacenamiento remoto está activado.", Toast.LENGTH_SHORT).show ();
             }
-        }
-        else
-        {
+        } else {
             disp_desconectado ();
         }
     }
 
-    private void disp_desconectado()
-    {
+    private void disp_desconectado() {
         Toast.makeText (this, "DESCONECTADO: El almacenamiento local está activado.", Toast.LENGTH_SHORT).show ();
         //llamada a la clase ConnectionSQLiteHelper.java
 
-        ConnectionSQLiteHelper conn = new ConnectionSQLiteHelper (this, "bd_interna_despacho_wyr",null,1);
+        ConnectionSQLiteHelper conn = new ConnectionSQLiteHelper (this, "bd_interna_despacho_wyr", null, 1);
         /* DESCRIPCION LLAMADA A CLASE ConnectionSQLiteHelper.java
          *   (context: this): Es una clase abstracta que implementa Android. Permite acceder a los recursos específicos
          * de la aplicación y a sus clases, así como llamar al padre para realizar operaciones a nivel de la aplicación,
@@ -174,7 +155,49 @@ public class MainActivity extends AppCompatActivity {
          *
          * (version: 1): indica la versión de la base de datos
          * */
+        
+        boolean primer_uso;// obtendrá true o false dependiendo del registro hallado en la BD
 
-        SQLiteDatabase sqlBD = conn.getWritableDatabase (); //sentencia que crea la base de datos
+        primer_uso = detectar_id_dispositivo (conn);
+        if(primer_uso==true)
+        {
+            Toast.makeText (this, "Verdadero", Toast.LENGTH_SHORT).show ();
+            activar_botones ();
+        }
+        else
+        {
+            Toast.makeText (this, "Comprobando primer uso...", Toast.LENGTH_SHORT).show ();
+            desactivar_botones ();
+            //llamada a activity primer uso
+            Intent intent = new Intent (this, ActivityPrimerUso.class);
+            startActivity(intent);
+        }
+
+    }
+    private boolean detectar_id_dispositivo(ConnectionSQLiteHelper conn)
+    {
+        SQLiteDatabase db = conn.getWritableDatabase();
+        Cursor cursor = db.rawQuery ("select * from dispositivo where id_dispositivo ='"+obtenerAndroidID (this)+"'",null);
+        if(cursor.moveToFirst ())
+        {
+            return true;
+        }
+        return false;
+    }
+    private void desactivar_botones()
+    {
+        btnNomina.setEnabled (false);
+        btnEntrega.setEnabled (false);
+        btnCarga.setEnabled (false);
+        btnRevision.setEnabled (false);
+        btnDespacho.setEnabled (false);
+    }
+    private void activar_botones()
+    {
+        btnNomina.setEnabled (false);
+        btnEntrega.setEnabled (false);
+        btnCarga.setEnabled (false);
+        btnRevision.setEnabled (false);
+        btnDespacho.setEnabled (false);
     }
 }

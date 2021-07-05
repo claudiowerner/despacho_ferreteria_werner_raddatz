@@ -45,7 +45,7 @@
         android:id="@+id/textView13"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Nombre"
+        android:text="Apellido"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.497"
@@ -67,7 +67,7 @@
         app:layout_constraintVertical_bias="0.166" />
 
     <EditText
-        android:id="@+id/edtRut2"
+        android:id="@+id/edtNombre"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:ems="10"
@@ -80,7 +80,7 @@
         app:layout_constraintVertical_bias="0.281" />
 
     <EditText
-        android:id="@+id/edtRut3"
+        android:id="@+id/edtApellido"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:ems="10"
@@ -93,6 +93,7 @@
         app:layout_constraintVertical_bias="0.415" />
 
     <Button
+        android:id="@+id/btnRegistrarDispositivo"
         android:layout_width="296dp"
         android:layout_height="45dp"
         android:text="Registrar dispositivo"
@@ -116,7 +117,7 @@
         app:layout_constraintVertical_bias="0.492" />
 
     <Spinner
-        android:id="@+id/spinner"
+        android:id="@+id/spLabor"
         android:layout_width="139dp"
         android:layout_height="24dp"
         android:entries="@array/labor"
