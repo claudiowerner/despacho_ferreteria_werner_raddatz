@@ -1,5 +1,8 @@
 package com.example.despachoferreteriaswernerraddatz.funciones;
 
+import android.content.Context;
+import android.os.Build;
+import android.provider.Settings;
 import android.telephony.TelephonyManager;
 
 import java.text.DateFormat;
@@ -33,4 +36,13 @@ public class Funciones
         return numDocumento;
     }
 
+    public String obtenerAndroidID(Context context) {
+        return Settings.Secure.getString (context.getContentResolver (), Settings.Secure.ANDROID_ID);
+    }
+    public String obtenerMarcaDispositivo() {
+        return Build.MANUFACTURER;
+    }
+    public String obtenerModeloDispositivo() {
+        return Build.MODEL;
+    }
 }

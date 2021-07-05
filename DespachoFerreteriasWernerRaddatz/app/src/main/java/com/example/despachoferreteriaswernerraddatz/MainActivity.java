@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
         btnCarga = findViewById (R.id.btnCarga);
         btnEntrega = findViewById (R.id.btnEntrega);
 
-        Toast.makeText (this, "IMEI: " + obtenerAndroidID (this), Toast.LENGTH_LONG).show ();
+        Toast.makeText (this, "IMEI: " + fun.obtenerAndroidID (this), Toast.LENGTH_LONG).show ();
 
         //acciones botón revisión
         btnRevision.setOnClickListener (new View.OnClickListener () {
@@ -101,11 +101,6 @@ public class MainActivity extends AppCompatActivity {
         } else {
             super.onActivityResult (requestCode, resultCode, data);
         }
-    }
-
-
-    private String obtenerAndroidID(Context context) {
-        return Settings.Secure.getString (context.getContentResolver (), Settings.Secure.ANDROID_ID);
     }
 
     private BroadcastReceiver networkStateReceiver = new BroadcastReceiver () {
@@ -177,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean detectar_id_dispositivo(ConnectionSQLiteHelper conn)
     {
         SQLiteDatabase db = conn.getWritableDatabase();
-        Cursor cursor = db.rawQuery ("select * from dispositivo where id_dispositivo ='"+obtenerAndroidID (this)+"'",null);
+        Cursor cursor = db.rawQuery ("select * from dispositivo where id_dispositivo ='"+fun.obtenerAndroidID (this)+"'",null);
         if(cursor.moveToFirst ())
         {
             return true;
@@ -194,10 +189,10 @@ public class MainActivity extends AppCompatActivity {
     }
     private void activar_botones()
     {
-        btnNomina.setEnabled (false);
-        btnEntrega.setEnabled (false);
-        btnCarga.setEnabled (false);
-        btnRevision.setEnabled (false);
-        btnDespacho.setEnabled (false);
+        btnNomina.setEnabled (true);
+        btnEntrega.setEnabled (true);
+        btnCarga.setEnabled (true);
+        btnRevision.setEnabled (true);
+        btnDespacho.setEnabled (true);
     }
 }
