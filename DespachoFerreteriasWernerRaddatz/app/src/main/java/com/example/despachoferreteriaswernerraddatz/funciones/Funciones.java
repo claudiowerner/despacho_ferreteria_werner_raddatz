@@ -1,5 +1,6 @@
 package com.example.despachoferreteriaswernerraddatz.funciones;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Build;
 import android.provider.Settings;
@@ -44,5 +45,16 @@ public class Funciones
     }
     public String obtenerModeloDispositivo() {
         return Build.MODEL;
+    }
+
+    public void dialogoAlerta(Context context, String titulo, String mensaje)
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle(titulo);
+        builder.setMessage(mensaje);
+        builder.setPositiveButton("Aceptar", null);
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 }

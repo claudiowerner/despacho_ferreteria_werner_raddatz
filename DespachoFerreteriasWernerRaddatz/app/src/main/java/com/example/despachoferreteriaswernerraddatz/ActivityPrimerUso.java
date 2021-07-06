@@ -33,13 +33,7 @@ public class ActivityPrimerUso extends AppCompatActivity {
         //llamada a clase Funciones
         Funciones fun = new Funciones();
 
-        //Strings
-        String codigo, nombre, apellido, id_dispositivo, marca_modelo_dispositivo;
-        codigo = edtCodigo.getText ().toString ();
-        nombre = edtNombre.getText ().toString ();
-        apellido = edtApellido.getText ().toString ();
-        id_dispositivo = fun.obtenerAndroidID (this);
-        marca_modelo_dispositivo = fun.obtenerMarcaDispositivo ()+" "+fun.obtenerModeloDispositivo ();
+
 
 
         //llamada a creación de base de datos. En este caso la BD no se creará, ya que existe.
@@ -49,21 +43,33 @@ public class ActivityPrimerUso extends AppCompatActivity {
         btnRegistrar.setOnClickListener (new View.OnClickListener () {
             @Override
             public void onClick(View v) {
+                //Strings
+                String codigo, nombre, apellido, id_dispositivo, marca_modelo_dispositivo;
+                codigo = edtCodigo.getText ().toString ();
+                nombre = edtNombre.getText ().toString ();
+                apellido = edtApellido.getText ().toString ();
+                id_dispositivo = fun.obtenerAndroidID (getApplicationContext ());
+                marca_modelo_dispositivo = fun.obtenerMarcaDispositivo ()+" "+fun.obtenerModeloDispositivo ();
                 if(codigo.equals("")||nombre.equals("")||apellido.equals(""))
                 {
-                    ContentValues reg = new ContentValues();
+                    fun.dialogoAlerta (ActivityPrimerUso.this,"¡Aviso!","Debe rellenar todos los campos.\nCodigo: "+codigo+"\nNombre: "+nombre+"\nApellido: "+apellido);
+                }
+                else
+                {
+                    ContentValues regEmpleado = new ContentValues();
+                    ContentValues regDispositivo = new ContentValues();
+
+                    //insertar datos en tabla empleado
+                    regEmpleado.put("id_empleado",codigo);
+                    regEmpleado.put("nombre", nombre);
+                    regEmpleado.put("apellido", apellido);
+                    db.insert("empleado",null,regEmpleado);
 
                     //insertar datos en tabla id_dispositivo
-                    reg.put("id_empleado",codigo);
-                    reg.put("nombre", nombre);
-                    reg.put("apellido", apellido);
-                    db.insert("empleado",null,reg);
-
-                    //insertar datos en tabla id_dispositivo
-                    reg.put("id_dispositivo",id_dispositivo);
-                    reg.put("marca_modelo", marca_modelo_dispositivo);
-                    reg.put("empleado_id_empleado", codigo);
-                    db.insert("dispositivo",null,reg);
+                    regDispositivo.put("id_dispositivo",id_dispositivo);
+                    regDispositivo.put("marca_modelo", marca_modelo_dispositivo);
+                    regDispositivo.put("empleado_id_empleado", codigo);
+                    db.insert("dispositivo",null,regDispositivo);
                     db.close();
                 }
             }

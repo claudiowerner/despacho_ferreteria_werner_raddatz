@@ -33,10 +33,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate (savedInstanceState);
         setContentView (R.layout.activity_main);
 
-
-        //llamada a la activity ActivityPrimerUso
-        Intent intent = new Intent (this, ActivityPrimerUso.class);
-
         //inicialización de objetos
         btnRevision = findViewById (R.id.btnRevision);
         btnNomina = findViewById (R.id.btnNomina);
@@ -44,23 +40,39 @@ public class MainActivity extends AppCompatActivity {
         btnCarga = findViewById (R.id.btnCarga);
         btnEntrega = findViewById (R.id.btnEntrega);
 
+        //llamada a la activity ActivityPrimerUso
+        Intent intent = new Intent (this, ActivityPrimerUso.class);
+
+        //llamada a la clase ConnectionSQLiteHelper.java
+        ConnectionSQLiteHelper conn = new ConnectionSQLiteHelper (this, "bd_interna_despacho_wyr", null, 1);
+
+        //Detectar primer uso de la aplicación
+        boolean primer_uso = detectar_id_dispositivo (conn);
+        if(primer_uso==true)
+        {
+            Toast.makeText (this, "Verdadero", Toast.LENGTH_SHORT).show ();
+            activar_botones ();
+        }
+        else
+        {
+            Toast.makeText (this, "Comprobando primer uso...", Toast.LENGTH_SHORT).show ();
+            desactivar_botones ();
+            //llamada a activity primer uso
+            startActivity(intent);
+        }
+
         Toast.makeText (this, "IMEI: " + fun.obtenerAndroidID (this), Toast.LENGTH_LONG).show ();
 
         //acciones botón revisión
         btnRevision.setOnClickListener (new View.OnClickListener () {
             @Override
             public void onClick(View v) {
-                IntentIntegrator integrador = new IntentIntegrator (MainActivity.this);
-                integrador.setDesiredBarcodeFormats (IntentIntegrator.CODE_128);
-                integrador.setOrientationLocked (true);
-                integrador.setPrompt ("LECTOR CÓDIGO DE BARRA");
-                integrador.setCameraId (0);
-                integrador.setBeepEnabled (true);
-                integrador.setBarcodeImageEnabled (true);
-                integrador.getCaptureActivity ();
-                integrador.initiateScan ();
+                Intent intent = new Intent (getApplicationContext (), ActivityPaqueteEscaneado.class);
+                startActivity (intent);
             }
         });
+
+
 
         Intent finalIntent1 = intent;
         btnDespacho.setOnClickListener (new View.OnClickListener () {
@@ -87,22 +99,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    //lectura de código de barra de revisión
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-
-        IntentResult result = IntentIntegrator.parseActivityResult (requestCode, resultCode, data);
-
-        if (result != null) {
-            if (result.getContents () == null) {
-                Toast.makeText (this, "Lectura cancelada", Toast.LENGTH_LONG).show ();
-            } else {
-                Toast.makeText (this, "Cod. barra: " + fun.tokenizer (result.getContents ()), Toast.LENGTH_LONG).show ();
-            }
-        } else {
-            super.onActivityResult (requestCode, resultCode, data);
-        }
-    }
-
     private BroadcastReceiver networkStateReceiver = new BroadcastReceiver () {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -127,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
     private void onNetworkChange(NetworkInfo networkInfo) {
         if (networkInfo != null) {
             if (networkInfo.getState () == NetworkInfo.State.CONNECTED) {
-                Toast.makeText (this, "CONECTADO: El almacenamiento remoto está activado.", Toast.LENGTH_SHORT).show ();
+                disp_conectado ();
             }
         } else {
             disp_desconectado ();
@@ -136,6 +132,23 @@ public class MainActivity extends AppCompatActivity {
 
     private void disp_desconectado() {
         Toast.makeText (this, "DESCONECTADO: El almacenamiento local está activado.", Toast.LENGTH_SHORT).show ();
+
+        /* DESCRIPCION LLAMADA A CLASE ConnectionSQLiteHelper.java
+         *   (context: this): Es una clase abstracta que implementa Android. Permite acceder a los recursos específicos
+         * de la aplicación y a sus clases, así como llamar al padre para realizar operaciones a nivel de la aplicación,
+         * como lanzar Activities, difundir mensajes por el sistema, recibir Intents, etc.
+         *
+         * (name: "bd_interna_despacho_wyr"): le da el nombre a la base de datos que se creará
+         *
+         * (factory: null):
+         *
+         * (version: 1): indica la versión de la base de datos
+         * */
+
+    }
+
+    private void disp_conectado() {
+        Toast.makeText (this, "CONECTADO: El almacenamiento remoto está activado.", Toast.LENGTH_SHORT).show ();
         //llamada a la clase ConnectionSQLiteHelper.java
 
         ConnectionSQLiteHelper conn = new ConnectionSQLiteHelper (this, "bd_interna_despacho_wyr", null, 1);
@@ -150,23 +163,6 @@ public class MainActivity extends AppCompatActivity {
          *
          * (version: 1): indica la versión de la base de datos
          * */
-        
-        boolean primer_uso;// obtendrá true o false dependiendo del registro hallado en la BD
-
-        primer_uso = detectar_id_dispositivo (conn);
-        if(primer_uso==true)
-        {
-            Toast.makeText (this, "Verdadero", Toast.LENGTH_SHORT).show ();
-            activar_botones ();
-        }
-        else
-        {
-            Toast.makeText (this, "Comprobando primer uso...", Toast.LENGTH_SHORT).show ();
-            desactivar_botones ();
-            //llamada a activity primer uso
-            Intent intent = new Intent (this, ActivityPrimerUso.class);
-            startActivity(intent);
-        }
 
     }
     private boolean detectar_id_dispositivo(ConnectionSQLiteHelper conn)
