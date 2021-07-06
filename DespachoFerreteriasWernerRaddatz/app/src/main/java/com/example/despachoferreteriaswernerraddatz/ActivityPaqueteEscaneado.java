@@ -12,6 +12,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.despachoferreteriaswernerraddatz.baseDatosSQLite.ConnectionSQLiteHelper;
 import com.example.despachoferreteriaswernerraddatz.funciones.Funciones;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
@@ -40,14 +41,43 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         telefonos.add("luis : 6554343");
         telefonos.add("ana : 7445434");
 
-        //recepción de valor enviado desde el MainActivity.java
-        Bundle bundle = getIntent().getExtras();
-        String s = bundle.getString("modo");
-
         imgButtonEscanear = findViewById (R.id.imgButtonEscanear);
         lstElementosEscaneados=findViewById(R.id.lstElementosEscaneados);
         lstElementosEscaneados.setAdapter(adaptador1);
+        lblModoApp = findViewById (R.id.lblModoApp);
 
+        //recepción de valor enviado desde el MainActivity.java
+        Bundle bundle = getIntent().getExtras();
+        String modo = getIntent().getStringExtra("modo");
+
+        ConnectionSQLiteHelper conn = new ConnectionSQLiteHelper ();
+
+        //comparación modo app
+        if(modo.equals ("1"))
+        {
+            lblModoApp.setText (lblModoApp.getText ().toString ()+"REVISIÓN");
+            //acciones de registro en modo REVISIÓN
+
+
+        }
+        else
+        {
+            if(modo.equals ("2"))
+            {
+                lblModoApp.setText (lblModoApp.getText ().toString ()+"DESPACHO");
+            }
+            else
+            {
+                if(modo.equals ("3"))
+                {
+                    lblModoApp.setText (lblModoApp.getText ().toString ()+"CARGA");
+                }
+                else
+                {
+                    lblModoApp.setText (lblModoApp.getText ().toString ()+"ENTREGA");
+                }
+            }
+        }
 
         //definicion acciones btnEscanear
         imgButtonEscanear.setOnClickListener (new View.OnClickListener () {
@@ -62,6 +92,11 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
                     integrador.setBarcodeImageEnabled (true);
                     integrador.getCaptureActivity ();
                     integrador.initiateScan ();
+
+                    if(modo == "0")
+                    {
+
+                    }
 
             }
         });

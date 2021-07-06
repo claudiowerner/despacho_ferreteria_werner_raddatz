@@ -61,14 +61,16 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         }
 
-        Toast.makeText (this, "IMEI: " + fun.obtenerAndroidID (this), Toast.LENGTH_LONG).show ();
+        final String[] modo = {""};
 
         //acciones botón revisión
         btnRevision.setOnClickListener (new View.OnClickListener () {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent (getApplicationContext (), ActivityPaqueteEscaneado.class);
-                intent.putExtra("modo",1);//La app entrará en modo 1, que sería modo Revisión
+                modo[0] = "1";
+                Toast.makeText (MainActivity.this, "Modo: "+modo[0], Toast.LENGTH_SHORT).show ();
+                intent.putExtra("modo",modo[0]);//La app entrará en modo 1, que sería modo Revisión
                 startActivity (intent);
             }
         });
