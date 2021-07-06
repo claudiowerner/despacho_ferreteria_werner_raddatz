@@ -9,6 +9,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.despachoferreteriaswernerraddatz.funciones.Funciones;
@@ -21,6 +22,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
 
     ListView lstElementosEscaneados;
     ImageButton imgButtonEscanear;
+    TextView lblModoApp;
 
     Funciones fun = new Funciones ();
 
@@ -29,6 +31,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate (savedInstanceState);
         setContentView (R.layout.activity_paquete_escaneado);
+
         //Creación de objeto ArrayList;
         ArrayList telefonos=new ArrayList();
         ArrayAdapter adaptador1=new ArrayAdapter(this,android.R.layout.simple_list_item_1,telefonos);
@@ -36,6 +39,10 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         telefonos.add("marcos : 43734843");
         telefonos.add("luis : 6554343");
         telefonos.add("ana : 7445434");
+
+        //recepción de valor enviado desde el MainActivity.java
+        Bundle bundle = getIntent().getExtras();
+        String s = bundle.getString("modo");
 
         imgButtonEscanear = findViewById (R.id.imgButtonEscanear);
         lstElementosEscaneados=findViewById(R.id.lstElementosEscaneados);
@@ -64,13 +71,19 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
 
         IntentResult result = IntentIntegrator.parseActivityResult (requestCode, resultCode, data);
 
-        if (result != null) {
-            if (result.getContents () == null) {
+        if (result != null)
+        {
+            if (result.getContents () == null)
+            {
                 Toast.makeText (this, "Lectura cancelada", Toast.LENGTH_LONG).show ();
-            } else {
+            }
+            else
+            {
                 Toast.makeText (this, "Cod. barra: " + fun.tokenizer (result.getContents ()), Toast.LENGTH_LONG).show ();
             }
-        } else {
+        }
+        else
+        {
             super.onActivityResult (requestCode, resultCode, data);
         }
     }

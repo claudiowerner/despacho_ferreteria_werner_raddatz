@@ -68,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent (getApplicationContext (), ActivityPaqueteEscaneado.class);
+                intent.putExtra("modo",1);//La app entrará en modo 1, que sería modo Revisión
                 startActivity (intent);
             }
         });
