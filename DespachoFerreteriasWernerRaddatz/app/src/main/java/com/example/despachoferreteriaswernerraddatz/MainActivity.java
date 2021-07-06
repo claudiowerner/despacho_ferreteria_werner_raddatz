@@ -99,53 +99,8 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private BroadcastReceiver networkStateReceiver = new BroadcastReceiver () {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            ConnectivityManager manager = (ConnectivityManager) context.getSystemService (Context.CONNECTIVITY_SERVICE);
-            NetworkInfo ni = manager.getActiveNetworkInfo ();
-            onNetworkChange (ni);
-        }
-    };
 
-    @Override
-    public void onResume() {
-        super.onResume ();
-        registerReceiver (networkStateReceiver, new IntentFilter (android.net.ConnectivityManager.CONNECTIVITY_ACTION));
-    }
 
-    @Override
-    public void onPause() {
-        unregisterReceiver (networkStateReceiver);
-        super.onPause ();
-    }
-
-    private void onNetworkChange(NetworkInfo networkInfo) {
-        if (networkInfo != null) {
-            if (networkInfo.getState () == NetworkInfo.State.CONNECTED) {
-                disp_conectado ();
-            }
-        } else {
-            disp_desconectado ();
-        }
-    }
-
-    private void disp_desconectado() {
-        Toast.makeText (this, "DESCONECTADO: El almacenamiento local está activado.", Toast.LENGTH_SHORT).show ();
-
-        /* DESCRIPCION LLAMADA A CLASE ConnectionSQLiteHelper.java
-         *   (context: this): Es una clase abstracta que implementa Android. Permite acceder a los recursos específicos
-         * de la aplicación y a sus clases, así como llamar al padre para realizar operaciones a nivel de la aplicación,
-         * como lanzar Activities, difundir mensajes por el sistema, recibir Intents, etc.
-         *
-         * (name: "bd_interna_despacho_wyr"): le da el nombre a la base de datos que se creará
-         *
-         * (factory: null):
-         *
-         * (version: 1): indica la versión de la base de datos
-         * */
-
-    }
 
     private void disp_conectado() {
         Toast.makeText (this, "CONECTADO: El almacenamiento remoto está activado.", Toast.LENGTH_SHORT).show ();
