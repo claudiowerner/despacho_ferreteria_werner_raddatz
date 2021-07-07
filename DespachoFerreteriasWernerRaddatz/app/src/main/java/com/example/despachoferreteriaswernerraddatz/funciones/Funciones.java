@@ -8,6 +8,7 @@ import android.telephony.TelephonyManager;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.StringTokenizer;
 
@@ -20,6 +21,27 @@ public class Funciones
         Date fecha = new Date(ahora);
         DateFormat formatoFecha = new SimpleDateFormat("dd/MM/yyyy");//formateo de fecha con salida tipo dia/mes/año
         return formatoFecha.format(fecha);
+    }
+
+    //obtener hora en formato 24rhs
+    public String hora()//metodo que permite obtener la fecha local del dispositivo
+    {
+        Calendar calendario = Calendar.getInstance ();
+        int hora, minutos;
+
+        hora =calendario.get(Calendar.HOUR_OF_DAY);
+        minutos = calendario.get(Calendar.MINUTE);
+        String min = "";
+        if(minutos<10)
+        {
+            min = "0"+minutos;
+        }
+        else
+        {
+            min=minutos+"";
+        }
+
+        return hora+":"+min;
     }
     public String tokenizer(String cadena)
     {
