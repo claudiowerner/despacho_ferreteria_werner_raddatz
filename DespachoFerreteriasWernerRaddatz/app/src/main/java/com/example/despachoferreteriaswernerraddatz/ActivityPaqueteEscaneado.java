@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.View;
@@ -108,8 +109,18 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
                 //llamada a clase ConnectionSQLiteHelper
                 ConnectionSQLiteHelper conn = new ConnectionSQLiteHelper (this, "bd_interna_despacho_wyr", null, 1);
 
-                //Llamada a clase SQLDataBase
-                registro_bd_interna (result.getContents (),conn);
+
+
+                //comparar si la caja está pickeada
+                boolean picking = detectar_caja (conn,result.getContents ());
+                if(picking)
+                {
+                    fun.dialogoAlerta (this,"¡Aviso!","Esta caja ya está revisada");
+                }
+                else
+                {
+                    registro_bd_interna (result.getContents (),conn);
+                }
             }
         }
         else
@@ -123,27 +134,22 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
     {
         int modo_numero = 0;
         SQLiteDatabase db = conn.getWritableDatabase();
+
+        //acciones registro tabla caja_estado
+        ContentValues insert_caja_estado = new ContentValues();
+
+        //acciones registro tabla caja_estatus_reporte
+        ContentValues insert_caja_estatus_reporte = new ContentValues ();
         if(modo.equals ("1"))
         {
             modo_numero = 1;
+
             //acciones de registro en modo REVISIÓN
-            //acciones registro tabla caja_estado
-            ContentValues insert_caja_estado = new ContentValues();
             insert_caja_estado.put ("cod_barra_caja",cod_barra);
             insert_caja_estado.put ("estatus",1);
             //inserción
             db.insert("caja_estado",null,insert_caja_estado);
 
-            fun.dialogoAlerta (this,"Aviso",
-                    "Cód. barra:"+cod_barra+"\n" +
-                            "Fecha: "+fun.fecha ()+"\n" +
-                            "Hora: "+fun.hora ()+"\n" +
-                            "Estatus: "+ modo_numero+"\n" +
-                            "Comentario: S/C\n" +
-                            "Id dispos.: "+fun.obtenerAndroidID (this));
-
-            //acciones registro tabla caja_estatus_reporte
-            ContentValues insert_caja_estatus_reporte = new ContentValues ();
             insert_caja_estatus_reporte.put ("cod_barra_caja",cod_barra);
             insert_caja_estatus_reporte.put ("fecha",fun.fecha());
             insert_caja_estatus_reporte.put ("hora",fun.hora ());
@@ -152,7 +158,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
             insert_caja_estatus_reporte.put ("id_dispositivo",fun.obtenerAndroidID (this));
             db.insert ("caja_estatus_reporte",null,insert_caja_estatus_reporte);
 
-            Toast.makeText (this, "DB: "+db.toString (), Toast.LENGTH_LONG).show ();
+            
 
             db.close ();
 
@@ -175,6 +181,17 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
                 }
             }
         }
+    }
+
+    private boolean detectar_caja(ConnectionSQLiteHelper conn, String cod_barra)
+    {
+        SQLiteDatabase db = conn.getWritableDatabase();
+        Cursor cursor = db.rawQuery ("select * from caja_estado where cod_barra_caja ='"+cod_barra+"'",null);
+        if(cursor.moveToFirst ())
+        {
+            return true;
+        }
+        return false;
     }
 /*select * from caja_estado ce join caja_estatus_reporte cer on ce.cod_barra_caja = cer.cod_barra_caja join dispositivo dis on cer.id_dispositivo = dis.id_dispositivo join empleado empl on empl.id_empleado =dis.empleado_id_empleado where dis.id_dispositivo = "imei12345" and cer.fecha="10/12/2020"*/
 
