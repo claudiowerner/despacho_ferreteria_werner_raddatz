@@ -78,6 +78,25 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        btnCarga.setOnClickListener (new View.OnClickListener () {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent (getApplicationContext (), ActivityPaqueteEscaneado.class);
+                modo[0] = "3";
+                intent.putExtra("modo",modo[0]);//La app entrará en modo 3, que sería modo Carga
+                startActivity (intent);
+            }
+        });
+        btnEntrega.setOnClickListener (new View.OnClickListener () {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent (getApplicationContext (), ActivityPaqueteEscaneado.class);
+                modo[0] = "4";
+                intent.putExtra("modo",modo[0]);//La app entrará en modo 2, que sería modo Entrega
+                startActivity (intent);
+            }
+        });
+
 
         //llamada a activity Nómina
         intent = new Intent (this, ActivityNomina.class);
