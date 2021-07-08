@@ -108,18 +108,8 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
             }
             else
             {
-                //comparar si la caja está pickeada
-                boolean picking_revision = detectar_caja_revision (conn,result.getContents ());
-                if(picking_revision)
-                {
-                    fun.dialogoAlerta (this,"¡Aviso!","La caja "+result.getContents ()+" ya está revisada");
-
-                }
-                else
-                {
-                    registro_bd_interna (result.getContents (),conn);
-                    llenarListView (modo);
-                }
+                registro_bd_interna (result.getContents (),conn);
+                llenarListView (modo);
             }
         }
         else
@@ -131,56 +121,68 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
     //registro interno en la base de datos
     private void registro_bd_interna(String cod_barra, ConnectionSQLiteHelper conn)
     {
-        int modo_numero = 0;
-        SQLiteDatabase db = conn.getWritableDatabase();
+        boolean caja_repetida;
 
-        //acciones registro tabla caja_estado
-        ContentValues insert_caja_estado = new ContentValues();
-
-        //acciones registro tabla caja_estatus_reporte
-        ContentValues insert_caja_estatus_reporte = new ContentValues ();
         if(modo.equals ("1"))
         {
-            modo_numero = 1;
-
-            //acciones de registro en modo REVISIÓN
-            insert_caja_estado.put ("cod_barra_caja",cod_barra);
-            insert_caja_estado.put ("estatus",1);
-            //inserción
-            db.insert("caja_estado",null,insert_caja_estado);
-
-            insert_caja_estatus_reporte.put ("cod_barra_caja",cod_barra);
-            insert_caja_estatus_reporte.put ("fecha",fun.fecha());
-            insert_caja_estatus_reporte.put ("hora",fun.hora ());
-            insert_caja_estatus_reporte.put ("estatus","1");
-            insert_caja_estatus_reporte.put ("comentario","s/c");
-            insert_caja_estatus_reporte.put ("id_dispositivo",fun.obtenerAndroidID (this));
-            db.insert ("caja_estatus_reporte",null,insert_caja_estatus_reporte);
+            caja_repetida = detectar_caja_repetida (conn,cod_barra,modo);
+            if(caja_repetida)
+            {
+                fun.dialogoAlerta (this, "¡Aviso!","La caja "+cod_barra+" ya está revisada");
+            }
+            else
+            {
+                insercion (1,cod_barra);
+            }
         }
         else
         {
             if(modo.equals ("2"))
             {
-                //
+                caja_repetida = detectar_caja_repetida (conn,cod_barra,modo);
+                if(caja_repetida)
+                {
+                    fun.dialogoAlerta (this, "¡Aviso!","La caja "+cod_barra+" ya está despachada");
+                }
+                else
+                {
+                    insercion (2,cod_barra);
+                }
             }
             else
             {
                 if(modo.equals ("3"))
                 {
-                    //
+                    caja_repetida = detectar_caja_repetida (conn,cod_barra,modo);
+                    if(caja_repetida)
+                    {
+                        fun.dialogoAlerta (this, "¡Aviso!","La caja "+cod_barra+" ya está cargada en el camión");
+                    }
+                    else
+                    {
+                        insercion (3,cod_barra);
+                    }
                 }
                 else
                 {
-                    //
+                    caja_repetida = detectar_caja_repetida (conn,cod_barra,modo);
+                    if(caja_repetida)
+                    {
+                        fun.dialogoAlerta (this, "¡Aviso!","La caja "+cod_barra+" ya está entregada");
+                    }
+                    else
+                    {
+                        insercion (4,cod_barra);
+                    }
                 }
             }
         }
     }
 
-    private boolean detectar_caja_revision(ConnectionSQLiteHelper conn, String cod_barra)
+    private boolean detectar_caja_repetida(ConnectionSQLiteHelper conn, String cod_barra, String estatus)//detecta si la caja ya ha sido despachada/revisada/entregada/cargada, evitando así doble pickeo
     {
         SQLiteDatabase db = conn.getWritableDatabase();
-        Cursor cursor = db.rawQuery ("select * from caja_estado where cod_barra_caja ='"+cod_barra+"'",null);
+        Cursor cursor = db.rawQuery ("select * from caja_estatus_reporte where cod_barra_caja ='"+cod_barra+"' and estatus = "+estatus,null);
         if(cursor.moveToFirst ())
         {
             return true;
@@ -206,6 +208,30 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         lstElementosEscaneados.setAdapter (arrayOpciones);
 
 
+    }
+
+    private void insercion(int modo_numero, String cod_barra)
+    {
+        SQLiteDatabase db = conn.getWritableDatabase();
+
+        //acciones registro tabla caja_estado
+        ContentValues insert_caja_estado = new ContentValues();
+
+        //acciones registro tabla caja_estatus_reporte
+        ContentValues insert_caja_estatus_reporte = new ContentValues ();
+        //acciones de registro en modo REVISIÓN
+        insert_caja_estado.put ("cod_barra_caja",cod_barra);
+        insert_caja_estado.put ("estatus",1);
+        //inserción
+        db.insert("caja_estado",null,insert_caja_estado);
+
+        insert_caja_estatus_reporte.put ("cod_barra_caja",cod_barra);
+        insert_caja_estatus_reporte.put ("fecha",fun.fecha());
+        insert_caja_estatus_reporte.put ("hora",fun.hora ());
+        insert_caja_estatus_reporte.put ("estatus",modo_numero);
+        insert_caja_estatus_reporte.put ("comentario","s/c");
+        insert_caja_estatus_reporte.put ("id_dispositivo",fun.obtenerAndroidID (this));
+        db.insert ("caja_estatus_reporte",null,insert_caja_estatus_reporte);
     }
 /*select * from caja_estado ce join caja_estatus_reporte cer on ce.cod_barra_caja = cer.cod_barra_caja join dispositivo dis on cer.id_dispositivo = dis.id_dispositivo join empleado empl on empl.id_empleado =dis.empleado_id_empleado where dis.id_dispositivo = "imei12345" and cer.fecha="10/12/2020"*/
 
