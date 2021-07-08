@@ -121,7 +121,8 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
     //registro interno en la base de datos
     private void registro_bd_interna(String cod_barra, ConnectionSQLiteHelper conn)
     {
-        boolean caja_repetida;
+        boolean caja_repetida, paso_anterior;
+        int status = Integer.parseInt (modo);
 
         if(modo.equals ("1"))
         {
@@ -146,7 +147,15 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
                 }
                 else
                 {
-                    insercion (2,cod_barra);
+                    paso_anterior = detectar_paso_anterior (conn,cod_barra,1);
+                    if(paso_anterior==false)
+                    {
+                        fun.dialogoAlerta (this,"¡Aviso!", "Esta caja no ha pasado por el proceso de revisión");
+                    }
+                    else
+                    {
+                        insercion (2,cod_barra);
+                    }
                 }
             }
             else
@@ -160,7 +169,15 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
                     }
                     else
                     {
-                        insercion (3,cod_barra);
+                        paso_anterior = detectar_paso_anterior (conn,cod_barra,2);
+                        if(paso_anterior==false)
+                        {
+                            fun.dialogoAlerta (this,"¡Aviso!", "Esta caja no ha pasado por el proceso de despacho");
+                        }
+                        else
+                        {
+                            insercion (3,cod_barra);
+                        }
                     }
                 }
                 else
@@ -172,7 +189,15 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
                     }
                     else
                     {
-                        insercion (4,cod_barra);
+                        paso_anterior = detectar_paso_anterior (conn,cod_barra,3);
+                        if(paso_anterior==false)
+                        {
+                            fun.dialogoAlerta (this,"¡Aviso!", "Esta caja no ha pasado por el proceso de carga");
+                        }
+                        else
+                        {
+                            insercion (4,cod_barra);
+                        }
                     }
                 }
             }
@@ -184,6 +209,17 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         SQLiteDatabase db = conn.getWritableDatabase();
         Cursor cursor = db.rawQuery ("select * from caja_estatus_reporte where cod_barra_caja ='"+cod_barra+"' and estatus = "+estatus,null);
         if(cursor.moveToFirst ())
+        {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean detectar_paso_anterior(ConnectionSQLiteHelper conn, String cod_barra, int estatus)//detecta si la caja ya pasó por el paso anterior, es decir, si la caja
+    {
+        SQLiteDatabase db = conn.getWritableDatabase();
+        Cursor cursor = db.rawQuery ("select * from caja_estatus_reporte where cod_barra_caja ='"+cod_barra+"' and estatus = "+estatus,null);
+        while(cursor.moveToNext ())
         {
             return true;
         }
