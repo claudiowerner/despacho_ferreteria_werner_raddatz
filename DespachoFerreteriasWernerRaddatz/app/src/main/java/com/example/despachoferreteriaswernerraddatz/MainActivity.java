@@ -37,12 +37,11 @@ public class MainActivity extends AppCompatActivity {
 
         //llamada a la clase ConnectionSQLiteHelper.java
         ConnectionSQLiteHelper conn = new ConnectionSQLiteHelper (this, "bd_interna_despacho_wyr", null, 1);
-
+        SQLiteDatabase db = conn.getWritableDatabase ();
         //Detectar primer uso de la aplicación
         boolean primer_uso = detectar_id_dispositivo (conn);
         if(primer_uso==true)
         {
-            Toast.makeText (this, "Verdadero", Toast.LENGTH_SHORT).show ();
             activar_botones ();
         }
         else
@@ -61,7 +60,6 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent (getApplicationContext (), ActivityPaqueteEscaneado.class);
                 modo[0] = "1";
-                Toast.makeText (MainActivity.this, "Modo: "+modo[0], Toast.LENGTH_SHORT).show ();
                 intent.putExtra("modo",modo[0]);//La app entrará en modo 1, que sería modo Revisión
                 startActivity (intent);
             }
@@ -73,7 +71,10 @@ public class MainActivity extends AppCompatActivity {
         btnDespacho.setOnClickListener (new View.OnClickListener () {
             @Override
             public void onClick(View v) {
-                startActivity (finalIntent1);
+                Intent intent = new Intent (getApplicationContext (), ActivityPaqueteEscaneado.class);
+                modo[0] = "2";
+                intent.putExtra("modo",modo[0]);//La app entrará en modo 2, que sería modo Despacho
+                startActivity (intent);
             }
         });
 

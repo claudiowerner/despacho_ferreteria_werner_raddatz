@@ -30,6 +30,8 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
 
     Funciones fun = new Funciones ();
 
+    //llamada a clase ConnectionSQLiteHelper
+    ConnectionSQLiteHelper conn = new ConnectionSQLiteHelper (this, "bd_interna_despacho_wyr", null, 1);
 
     String modo;
 
@@ -41,14 +43,13 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         //recepción de valor enviado desde el MainActivity.java
         Bundle bundle = getIntent().getExtras();
         modo = getIntent().getStringExtra("modo");
-        //Creación de objeto ArrayList;
-        ArrayList telefonos=new ArrayList();
-        ArrayAdapter adaptador1=new ArrayAdapter(this,android.R.layout.simple_list_item_1,telefonos);
 
         imgButtonEscanear = findViewById (R.id.imgButtonEscanear);
         lstElementosEscaneados=findViewById(R.id.lstElementosEscaneados);
-        lstElementosEscaneados.setAdapter(adaptador1);
         lblModoApp = findViewById (R.id.lblModoApp);
+
+        //rellenar ListView con datos escaneados según el modo de la app
+        llenarListView (modo);
 
         //comparación modo app
         if(modo.equals ("1"))
@@ -82,12 +83,12 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
             public void onClick(View v)
             {
                 IntentIntegrator integrador = new IntentIntegrator (ActivityPaqueteEscaneado.this);
-                integrador.setDesiredBarcodeFormats (IntentIntegrator.CODE_128);
-                integrador.setOrientationLocked (true);
+                integrador.setDesiredBarcodeFormats (IntentIntegrator.ALL_CODE_TYPES);
+                integrador.setOrientationLocked (false);
                 integrador.setPrompt ("LECTOR CÓDIGO DE BARRA");
                 integrador.setCameraId (0);
                 integrador.setBeepEnabled (true);
-                integrador.setBarcodeImageEnabled (true);
+                integrador.setBarcodeImageEnabled(false);
                 integrador.getCaptureActivity ();
                 integrador.initiateScan ();
             }
@@ -98,6 +99,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
 
         IntentResult result = IntentIntegrator.parseActivityResult (requestCode, resultCode, data);
 
+
         if (result != null)
         {
             if (result.getContents () == null)
@@ -106,20 +108,17 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
             }
             else
             {
-                //llamada a clase ConnectionSQLiteHelper
-                ConnectionSQLiteHelper conn = new ConnectionSQLiteHelper (this, "bd_interna_despacho_wyr", null, 1);
-
-
-
                 //comparar si la caja está pickeada
-                boolean picking = detectar_caja (conn,result.getContents ());
-                if(picking)
+                boolean picking_revision = detectar_caja_revision (conn,result.getContents ());
+                if(picking_revision)
                 {
-                    fun.dialogoAlerta (this,"¡Aviso!","Esta caja ya está revisada");
+                    fun.dialogoAlerta (this,"¡Aviso!","La caja "+result.getContents ()+" ya está revisada");
+
                 }
                 else
                 {
                     registro_bd_interna (result.getContents (),conn);
+                    llenarListView (modo);
                 }
             }
         }
@@ -157,11 +156,6 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
             insert_caja_estatus_reporte.put ("comentario","s/c");
             insert_caja_estatus_reporte.put ("id_dispositivo",fun.obtenerAndroidID (this));
             db.insert ("caja_estatus_reporte",null,insert_caja_estatus_reporte);
-
-            
-
-            db.close ();
-
         }
         else
         {
@@ -183,7 +177,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         }
     }
 
-    private boolean detectar_caja(ConnectionSQLiteHelper conn, String cod_barra)
+    private boolean detectar_caja_revision(ConnectionSQLiteHelper conn, String cod_barra)
     {
         SQLiteDatabase db = conn.getWritableDatabase();
         Cursor cursor = db.rawQuery ("select * from caja_estado where cod_barra_caja ='"+cod_barra+"'",null);
@@ -192,6 +186,24 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
             return true;
         }
         return false;
+    }
+
+    private void llenarListView(String status)
+    {
+        SQLiteDatabase db = conn.getReadableDatabase ();
+
+        Cursor cursor = db.rawQuery("select * from caja_estatus_reporte where estatus = "+status+" and fecha = '"+fun.fecha ()+"' order by cod_barra_caja desc",null);
+
+        ArrayList array = new ArrayList ();
+
+        while (cursor.moveToNext ())
+        {
+            array.add("Codigo: "+cursor.getString (0)+"\nHora: "+cursor.getString (2));
+        }
+        ArrayAdapter<String> arrayOpciones = new ArrayAdapter<String>(this, android.R.layout.simple_expandable_list_item_1,array);
+        lstElementosEscaneados.setAdapter (arrayOpciones);
+
+
     }
 /*select * from caja_estado ce join caja_estatus_reporte cer on ce.cod_barra_caja = cer.cod_barra_caja join dispositivo dis on cer.id_dispositivo = dis.id_dispositivo join empleado empl on empl.id_empleado =dis.empleado_id_empleado where dis.id_dispositivo = "imei12345" and cer.fecha="10/12/2020"*/
 
