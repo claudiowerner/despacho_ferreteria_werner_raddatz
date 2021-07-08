@@ -83,7 +83,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
             public void onClick(View v)
             {
                 IntentIntegrator integrador = new IntentIntegrator (ActivityPaqueteEscaneado.this);
-                integrador.setDesiredBarcodeFormats (IntentIntegrator.ALL_CODE_TYPES);
+                integrador.setDesiredBarcodeFormats (IntentIntegrator.CODE_128);
                 integrador.setOrientationLocked (false);
                 integrador.setPrompt ("LECTOR CÓDIGO DE BARRA");
                 integrador.setCameraId (0);
@@ -196,9 +196,11 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
 
         ArrayList array = new ArrayList ();
 
+        int id = 0;
         while (cursor.moveToNext ())
         {
-            array.add("Codigo: "+cursor.getString (0)+"\nHora: "+cursor.getString (2));
+            id++;
+            array.add("("+id+") \tCodigo: "+cursor.getString (0)+"\n\t\t\tHora: "+cursor.getString (2));
         }
         ArrayAdapter<String> arrayOpciones = new ArrayAdapter<String>(this, android.R.layout.simple_expandable_list_item_1,array);
         lstElementosEscaneados.setAdapter (arrayOpciones);
