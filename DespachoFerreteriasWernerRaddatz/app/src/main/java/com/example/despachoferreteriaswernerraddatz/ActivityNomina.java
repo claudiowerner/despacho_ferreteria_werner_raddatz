@@ -56,17 +56,6 @@ public class ActivityNomina extends AppCompatActivity {
             }
         });
 
-
-
-
-        /*Para realizar la consulta con respecto a la nómina, se tiene que asociar el ID del empleado donde la fecha
-        * de entrega sea la del sistema
-        * Se debe crear un viaje asociado al día actual
-        * Para que se listen los datos de la entrega en la nómina, tiene que seleccionarse la fecha actual, la tabla
-        * que contenga los paquetes que se han cargado al camión y
-        * */
-
-
     }
 
 
@@ -78,7 +67,7 @@ public class ActivityNomina extends AppCompatActivity {
         SQLiteDatabase db = conn.getReadableDatabase ();
         if(consulta.equals ("")||consulta.equals (null))
         {
-            Cursor cursor = db.rawQuery("select * from caja_estatus_reporte where estatus=3 or estatus=4 group by num_doc",null);
+            Cursor cursor = db.rawQuery("select * from caja_estatus_reporte where estatus=3 and estatus!=4 group by num_doc",null);
 
             ArrayList array = new ArrayList ();
 
