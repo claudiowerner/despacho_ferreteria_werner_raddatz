@@ -43,10 +43,10 @@ public class Funciones
 
         return hora+":"+min;
     }
-    public String tokenizer(String cadena)
+    public String tokenizer(String cadena, String delimitador)
     {
         //separación de cadena de caracteres
-        StringTokenizer st = new StringTokenizer (cadena, "-");
+        StringTokenizer st = new StringTokenizer (cadena, delimitador);
         String destino = "";
         String numDocumento = "";
         while (st.hasMoreTokens ()) {

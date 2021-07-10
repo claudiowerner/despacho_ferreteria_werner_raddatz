@@ -235,10 +235,12 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         ArrayList array = new ArrayList ();
 
         int id = 0;
+
+        //String que obtendrá el número de factura
         while (cursor.moveToNext ())
         {
             id++;
-            array.add("("+id+") \tCodigo: "+cursor.getString (0)+"\n\t\t\tHora: "+cursor.getString (2));
+            array.add("("+id+") \tCodigo: "+cursor.getString (0)+"\n\t\t\tHora: "+cursor.getString (3));
         }
         ArrayAdapter<String> arrayOpciones = new ArrayAdapter<String>(this, android.R.layout.simple_expandable_list_item_1,array);
         lstElementosEscaneados.setAdapter (arrayOpciones);
@@ -248,6 +250,8 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
 
     private void insercion(int modo_numero, String cod_barra)
     {
+        String num_doc = fun.tokenizer (cod_barra, "-");
+
         SQLiteDatabase db = conn.getWritableDatabase();
 
         //acciones registro tabla caja_estado
@@ -262,6 +266,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         db.insert("caja_estado",null,insert_caja_estado);
 
         insert_caja_estatus_reporte.put ("cod_barra_caja",cod_barra);
+        insert_caja_estatus_reporte.put ("num_doc",num_doc);
         insert_caja_estatus_reporte.put ("fecha",fun.fecha());
         insert_caja_estatus_reporte.put ("hora",fun.hora ());
         insert_caja_estatus_reporte.put ("estatus",modo_numero);

@@ -92,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent (getApplicationContext (), ActivityPaqueteEscaneado.class);
                 modo[0] = "4";
-                intent.putExtra("modo",modo[0]);//La app entrará en modo 2, que sería modo Entrega
+                intent.putExtra("modo",modo[0]);//La app entrará en modo 4, que sería modo Entrega
                 startActivity (intent);
             }
         });
