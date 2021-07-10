@@ -7,10 +7,11 @@
     tools:context=".activityFacturaNomina">
 
     <TextView
-        android:id="@+id/textView15"
+        android:id="@+id/txtNumDoc"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Código de barra"
+        android:textAlignment="center"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
@@ -43,7 +44,7 @@
         app:layout_constraintVertical_bias="0.247" />
 
     <EditText
-        android:id="@+id/editTextTextPersonName"
+        android:id="@+id/edtComentario"
         android:layout_width="275dp"
         android:layout_height="307dp"
         android:ems="10"
