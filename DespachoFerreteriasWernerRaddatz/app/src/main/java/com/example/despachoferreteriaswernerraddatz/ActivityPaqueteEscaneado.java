@@ -207,7 +207,9 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         }
         else
         {
-            fun.dialogoAlerta (this, "Error","El formato de código de barra obtenido no coincide con la siguiente estructura: \nXXX-DOC000000-000");
+            fun.dialogoAlerta (this, "Error","El formato de código de barra obtenido no coincide con la\n" +
+                    "siguiente estructura: \nXXX-DOC000000-000\n" +
+                    "Dato obtenido: "+cod_barra);
         }
     }
 

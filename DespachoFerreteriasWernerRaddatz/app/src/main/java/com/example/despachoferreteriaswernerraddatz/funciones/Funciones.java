@@ -6,6 +6,7 @@ import android.content.Context;
 import android.os.Build;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
+import android.widget.Toast;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -86,7 +87,7 @@ public class Funciones
     //validar formato de codigo de barra
     public boolean validarFormatoCodigoBarra(String codBarra)
     {
-        Pattern patron = Pattern.compile("[A-Z]{3}-[A-Z]{3}[0-9]{7}-[0-9]{3}");
+        Pattern patron = Pattern.compile("[A-Z]{3}-[A-Z]{3}[0-9]{6}-[0-9]{3}");
         Matcher mat = patron.matcher(codBarra);
         if(mat.matches()) {
             return true;

@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -23,6 +24,7 @@ public class ActivityNomina extends AppCompatActivity {
     //creación de objetos
     private TextView txtNomina;
     private ListView lstNomina;
+    private Button btnBuscar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +33,7 @@ public class ActivityNomina extends AppCompatActivity {
         //inicialización de objetos
         txtNomina = findViewById(R.id.txtBusqueda);
         lstNomina = findViewById (R.id.lstNomina);
+        btnBuscar = findViewById (R.id.btnBuscarDocumento);
 
         //llamada a clase Funciones, donde se almacenan todos los métodos o funciones útiles para el programa
         Funciones fun = new Funciones();
@@ -64,11 +67,10 @@ public class ActivityNomina extends AppCompatActivity {
         ConnectionSQLiteHelper conn = new ConnectionSQLiteHelper (this, "bd_interna_despacho_wyr", null, 1);
 
         SQLiteDatabase db = conn.getReadableDatabase ();
+        ArrayList array = new ArrayList ();
         if(consulta.equals ("")||consulta.equals (null))
         {
             Cursor cursor = db.rawQuery("select * from caja_estatus_reporte where estatus=3 and estatus!=4 group by num_doc",null);
-
-            ArrayList array = new ArrayList ();
 
             int id = 0;
 
@@ -78,8 +80,21 @@ public class ActivityNomina extends AppCompatActivity {
                 id++;
                 array.add("("+id+") "+cursor.getString (1));
             }
-            ArrayAdapter<String> arrayOpciones = new ArrayAdapter<String>(this, android.R.layout.simple_expandable_list_item_1,array);
-            lstNomina.setAdapter (arrayOpciones);
         }
+        else
+        {
+            Cursor cursor = db.rawQuery("select * from caja_estatus_reporte where num_doc like '%"+consulta+"%'",null);
+
+            int id = 0;
+
+
+            while (cursor.moveToNext ())
+            {
+                id++;
+                array.add("("+id+") "+cursor.getString (1));
+            }
+        }
+        ArrayAdapter<String> arrayOpciones = new ArrayAdapter<String>(this, android.R.layout.simple_expandable_list_item_1,array);
+        lstNomina.setAdapter (arrayOpciones);
     }
 }
