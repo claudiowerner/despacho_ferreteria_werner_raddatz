@@ -3,6 +3,7 @@ package com.example.despachoferreteriaswernerraddatz;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.ContentValues;
+import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.View;
@@ -70,7 +71,11 @@ public class ActivityPrimerUso extends AppCompatActivity {
                     regDispositivo.put("marca_modelo", marca_modelo_dispositivo);
                     regDispositivo.put("empleado_id_empleado", codigo);
                     db.insert("dispositivo",null,regDispositivo);
-                    db.close();
+                    //cerrar activity
+                    Intent intent = new Intent(getApplicationContext (), MainActivity.class);
+                    intent.addCategory(Intent.CATEGORY_HOME);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
                 }
             }
         });
