@@ -110,7 +110,6 @@ public class activityFacturaNomina extends AppCompatActivity {
         SQLiteDatabase db = conn.getReadableDatabase ();
         Cursor cursor = db.rawQuery("select * from caja_estatus_reporte where estatus=3 and num_doc = '"+numDoc+"'",null);
 
-        ArrayList array = new ArrayList ();
         while (cursor.moveToNext ())
         {
             return cursor.getString (5);

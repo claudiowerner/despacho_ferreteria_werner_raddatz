@@ -121,86 +121,93 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
     //registro interno en la base de datos
     private void registro_bd_interna(String cod_barra, ConnectionSQLiteHelper conn)
     {
-        boolean caja_repetida, paso_anterior;
+        boolean caja_repetida, paso_anterior, formato;
         int status = Integer.parseInt (modo);
-
-        if(modo.equals ("1"))
+        formato = fun.validarFormatoCodigoBarra (cod_barra);
+        if(formato)
         {
-            caja_repetida = detectar_caja_repetida (conn,cod_barra,modo);
-            if(caja_repetida)
-            {
-                fun.dialogoAlerta (this, "¡Aviso!","La caja "+cod_barra+" ya está revisada");
-            }
-            else
-            {
-                insercion (1,cod_barra);
-            }
-        }
-        else
-        {
-            if(modo.equals ("2"))
+            if(modo.equals ("1"))
             {
                 caja_repetida = detectar_caja_repetida (conn,cod_barra,modo);
                 if(caja_repetida)
                 {
-                    fun.dialogoAlerta (this, "¡Aviso!","La caja "+cod_barra+" ya está despachada");
+                    fun.dialogoAlerta (this, "¡Aviso!","La caja "+cod_barra+" ya está revisada");
                 }
                 else
                 {
-                    paso_anterior = detectar_paso_anterior (conn,cod_barra,1);
-                    if(paso_anterior==false)
-                    {
-                        fun.dialogoAlerta (this,"¡Aviso!", "Esta caja no ha pasado por el proceso de revisión");
-                    }
-                    else
-                    {
-                        insercion (2,cod_barra);
-                    }
+                    insercion (1,cod_barra);
                 }
             }
             else
             {
-                if(modo.equals ("3"))
+                if(modo.equals ("2"))
                 {
                     caja_repetida = detectar_caja_repetida (conn,cod_barra,modo);
                     if(caja_repetida)
                     {
-                        fun.dialogoAlerta (this, "¡Aviso!","La caja "+cod_barra+" ya está cargada en el camión");
+                        fun.dialogoAlerta (this, "¡Aviso!","La caja "+cod_barra+" ya está despachada");
                     }
                     else
                     {
-                        paso_anterior = detectar_paso_anterior (conn,cod_barra,2);
+                        paso_anterior = detectar_paso_anterior (conn,cod_barra,1);
                         if(paso_anterior==false)
                         {
-                            fun.dialogoAlerta (this,"¡Aviso!", "Esta caja no ha pasado por el proceso de despacho");
+                            fun.dialogoAlerta (this,"¡Aviso!", "Esta caja no ha pasado por el proceso de revisión");
                         }
                         else
                         {
-                            insercion (3,cod_barra);
+                            insercion (2,cod_barra);
                         }
                     }
                 }
                 else
                 {
-                    caja_repetida = detectar_caja_repetida (conn,cod_barra,modo);
-                    if(caja_repetida)
+                    if(modo.equals ("3"))
                     {
-                        fun.dialogoAlerta (this, "¡Aviso!","La caja "+cod_barra+" ya está entregada");
-                    }
-                    else
-                    {
-                        paso_anterior = detectar_paso_anterior (conn,cod_barra,3);
-                        if(paso_anterior==false)
+                        caja_repetida = detectar_caja_repetida (conn,cod_barra,modo);
+                        if(caja_repetida)
                         {
-                            fun.dialogoAlerta (this,"¡Aviso!", "Esta caja no ha pasado por el proceso de carga");
+                            fun.dialogoAlerta (this, "¡Aviso!","La caja "+cod_barra+" ya está cargada en el camión");
                         }
                         else
                         {
-                            insercion (4,cod_barra);
+                            paso_anterior = detectar_paso_anterior (conn,cod_barra,2);
+                            if(paso_anterior==false)
+                            {
+                                fun.dialogoAlerta (this,"¡Aviso!", "Esta caja no ha pasado por el proceso de despacho");
+                            }
+                            else
+                            {
+                                insercion (3,cod_barra);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        caja_repetida = detectar_caja_repetida (conn,cod_barra,modo);
+                        if(caja_repetida)
+                        {
+                            fun.dialogoAlerta (this, "¡Aviso!","La caja "+cod_barra+" ya está entregada");
+                        }
+                        else
+                        {
+                            paso_anterior = detectar_paso_anterior (conn,cod_barra,3);
+                            if(paso_anterior==false)
+                            {
+                                fun.dialogoAlerta (this,"¡Aviso!", "Esta caja no ha pasado por el proceso de carga");
+                            }
+                            else
+                            {
+                                insercion (4,cod_barra);
+                            }
                         }
                     }
                 }
             }
+        }
+        else
+        {
+            fun.dialogoAlerta (this, "Error","El formato de código de barra obtenido no coincide con la siguiente estructura: \nXXX-DOC000000-000");
         }
     }
 

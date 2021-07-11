@@ -1,6 +1,7 @@
 package com.example.despachoferreteriaswernerraddatz.funciones;
 
 import android.app.AlertDialog;
+import android.content.ContentValues;
 import android.content.Context;
 import android.os.Build;
 import android.provider.Settings;
@@ -11,6 +12,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Funciones
 {
@@ -78,5 +81,16 @@ public class Funciones
 
         AlertDialog dialog = builder.create();
         dialog.show();
+    }
+
+    //validar formato de codigo de barra
+    public boolean validarFormatoCodigoBarra(String codBarra)
+    {
+        Pattern patron = Pattern.compile("[A-Z]{3}-[A-Z]{3}[0-9]{7}-[0-9]{3}");
+        Matcher mat = patron.matcher(codBarra);
+        if(mat.matches()) {
+            return true;
+        }
+        return false;
     }
 }
