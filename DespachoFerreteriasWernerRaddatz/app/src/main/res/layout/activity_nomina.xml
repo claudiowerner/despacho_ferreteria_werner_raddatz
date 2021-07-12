@@ -46,7 +46,7 @@
         tools:layout_editor_absoluteX="-5dp" />
 
     <EditText
-        android:id="@+id/editTextTextPersonName2"
+        android:id="@+id/edtNumDoc"
         android:layout_width="264dp"
         android:layout_height="48dp"
         android:ems="10"

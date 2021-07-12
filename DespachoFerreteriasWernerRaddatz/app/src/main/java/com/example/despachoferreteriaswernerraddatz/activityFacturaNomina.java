@@ -45,8 +45,8 @@ public class activityFacturaNomina extends AppCompatActivity {
         txtNumDoc.setText ("Documento no.\n"+numDoc);
         int paq_entr = num_paquetes_entregados (numDoc);//captura el numero de paquetes entregados
         int paq_carga = num_paquetes_totales (numDoc);//obtiene el numero de paquetes existentes en el camión
-        int porc_avance = (paq_entr/paq_carga)*100;
-        txtNumPaquetesEntregados.setText ("Entregados "+paq_entr+"/"+paq_carga+" ("+porc_avance+"%)");
+        double porc_avance = (paq_entr/paq_carga);
+        txtNumPaquetesEntregados.setText ("Entregados "+paq_entr+"/"+paq_carga+"");
 
         //recepción de comentario
         edtComentario.setText (comentario (numDoc));

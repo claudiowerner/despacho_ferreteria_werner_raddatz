@@ -124,7 +124,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         boolean caja_repetida, paso_anterior, formato;
         int status = Integer.parseInt (modo);
         formato = fun.validarFormatoCodigoBarra (cod_barra);
-        if(formato)
+        if(formato==true)
         {
             if(modo.equals ("1"))
             {
@@ -239,7 +239,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
     {
         SQLiteDatabase db = conn.getReadableDatabase ();
 
-        Cursor cursor = db.rawQuery("select * from caja_estatus_reporte where estatus = "+status+" and fecha = '"+fun.fecha ()+"' order by cod_barra_caja desc",null);
+        Cursor cursor = db.rawQuery("select * from caja_estatus_reporte where estatus = "+status+" and fecha = '"+fun.fecha ()+"' order by hora desc",null);
 
         ArrayList array = new ArrayList ();
 
