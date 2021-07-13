@@ -287,7 +287,6 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         insert_caja_estatus_reporte.put ("id_dispositivo",fun.obtenerAndroidID (this));
         db.insert ("caja_estatus_reporte",null,insert_caja_estatus_reporte);
     }
-
     private BroadcastReceiver networkStateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -307,16 +306,37 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
     public void onPause() {
         unregisterReceiver(networkStateReceiver);
         super.onPause();
+        Toast.makeText (this, "Conectado pero sin internet (private void ONPAUSE())", Toast.LENGTH_SHORT).show ();
     }
 
     private void onNetworkChange(NetworkInfo networkInfo) {
-        if (networkInfo != null) {
-            if (networkInfo.getState() == NetworkInfo.State.CONNECTED) {
+        if (networkInfo != null)
+        {
+            if (networkInfo.getState() == NetworkInfo.State.CONNECTED)
+            {
                 Toast.makeText (this, "CONECTADO: El almacenamiento remoto está activado.", Toast.LENGTH_SHORT).show ();
-            } else {
-                Toast.makeText (this, "DESCONECTADO: El almacenamiento local está activado.", Toast.LENGTH_SHORT).show ();
+            }
+            if(networkInfo.getState ()==NetworkInfo.State.SUSPENDED)
+            {
+                Toast.makeText (this, "Conexión suspendida", Toast.LENGTH_SHORT).show ();
+            }
+            if(networkInfo.getState ()==NetworkInfo.State.CONNECTING)
+            {
+                Toast.makeText (this, "Conectando", Toast.LENGTH_SHORT).show ();
+            }
+            if(networkInfo.getState ()==NetworkInfo.State.DISCONNECTING)
+            {
+                Toast.makeText (this, "Desconectando", Toast.LENGTH_SHORT).show ();
+            }
+            if(networkInfo.getState ()==NetworkInfo.State.UNKNOWN)
+            {
+                Toast.makeText (this, "Estado de conexión desconocido", Toast.LENGTH_SHORT).show ();
+            }
+            if(networkInfo.getState ()==NetworkInfo.State.DISCONNECTING)
+            {
+                Toast.makeText (this, "Desconectando", Toast.LENGTH_SHORT).show ();
             }
         }
-    }
 
+    }
 }

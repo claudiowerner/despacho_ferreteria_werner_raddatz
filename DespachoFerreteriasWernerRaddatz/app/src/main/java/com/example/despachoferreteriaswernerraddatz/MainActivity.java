@@ -146,38 +146,55 @@ public class MainActivity extends AppCompatActivity {
         btnDespacho.setEnabled (true);
     }
     private BroadcastReceiver networkStateReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                ConnectivityManager manager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-                NetworkInfo ni = manager.getActiveNetworkInfo();
-                onNetworkChange(ni);
-            }
-        };
-
         @Override
-        public void onResume() {
-            super.onResume();
-            registerReceiver(networkStateReceiver, new IntentFilter (android.net.ConnectivityManager.CONNECTIVITY_ACTION));
+        public void onReceive(Context context, Intent intent) {
+            ConnectivityManager manager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo ni = manager.getActiveNetworkInfo();
+            onNetworkChange(ni);
+        }
+    };
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        registerReceiver(networkStateReceiver, new IntentFilter (android.net.ConnectivityManager.CONNECTIVITY_ACTION));
+    }
+
+    @Override
+    public void onPause() {
+        unregisterReceiver(networkStateReceiver);
+        super.onPause();
+        Toast.makeText (this, "Conectado pero sin internet (private void ONPAUSE())", Toast.LENGTH_SHORT).show ();
         }
 
-        @Override
-        public void onPause() {
-            unregisterReceiver(networkStateReceiver);
-            super.onPause();
-        }
-
-        private boolean onNetworkChange(NetworkInfo networkInfo) {
-            if (networkInfo != null)
+    private void onNetworkChange(NetworkInfo networkInfo) {
+        if (networkInfo != null)
+        {
+            if (networkInfo.getState() == NetworkInfo.State.CONNECTED)
             {
-                if (networkInfo.getState () == NetworkInfo.State.CONNECTED)
-                {
-                    if (networkInfo.getState () == NetworkInfo.State.CONNECTED)
-                    {
-                        Toast.makeText (this, "CONECTADO: El almacenamiento remoto está activado.", Toast.LENGTH_SHORT).show ();
-                        return true;
-                    }
-                }
+                Toast.makeText (this, "CONECTADO: El almacenamiento remoto está activado.", Toast.LENGTH_SHORT).show ();
             }
-            return false;
+            if(networkInfo.getState ()==NetworkInfo.State.SUSPENDED)
+            {
+                Toast.makeText (this, "Conexión suspendida", Toast.LENGTH_SHORT).show ();
+            }
+            if(networkInfo.getState ()==NetworkInfo.State.CONNECTING)
+            {
+                Toast.makeText (this, "Conectando", Toast.LENGTH_SHORT).show ();
+            }
+            if(networkInfo.getState ()==NetworkInfo.State.DISCONNECTING)
+            {
+                Toast.makeText (this, "Desconectando", Toast.LENGTH_SHORT).show ();
+            }
+            if(networkInfo.getState ()==NetworkInfo.State.UNKNOWN)
+            {
+                Toast.makeText (this, "Estado de conexión desconocido", Toast.LENGTH_SHORT).show ();
+            }
+            if(networkInfo.getState ()==NetworkInfo.State.DISCONNECTING)
+            {
+                Toast.makeText (this, "Desconectando", Toast.LENGTH_SHORT).show ();
+            }
         }
+
+    }
 }

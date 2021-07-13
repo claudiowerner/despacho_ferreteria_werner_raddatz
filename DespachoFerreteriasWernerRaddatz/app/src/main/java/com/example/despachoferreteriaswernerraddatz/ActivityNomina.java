@@ -71,7 +71,6 @@ public class ActivityNomina extends AppCompatActivity {
                 buscarDatos (edtNumDoc.getText ().toString ());
             }
         });
-
     }
 
 
