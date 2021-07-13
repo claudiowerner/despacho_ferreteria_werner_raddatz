@@ -2,14 +2,18 @@ package com.example.despachoferreteriaswernerraddatz;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.BroadcastReceiver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -283,6 +287,36 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         insert_caja_estatus_reporte.put ("id_dispositivo",fun.obtenerAndroidID (this));
         db.insert ("caja_estatus_reporte",null,insert_caja_estatus_reporte);
     }
-/*select * from caja_estado ce join caja_estatus_reporte cer on ce.cod_barra_caja = cer.cod_barra_caja join dispositivo dis on cer.id_dispositivo = dis.id_dispositivo join empleado empl on empl.id_empleado =dis.empleado_id_empleado where dis.id_dispositivo = "imei12345" and cer.fecha="10/12/2020"*/
+
+    private BroadcastReceiver networkStateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            ConnectivityManager manager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo ni = manager.getActiveNetworkInfo();
+            onNetworkChange(ni);
+        }
+    };
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        registerReceiver(networkStateReceiver, new IntentFilter (android.net.ConnectivityManager.CONNECTIVITY_ACTION));
+    }
+
+    @Override
+    public void onPause() {
+        unregisterReceiver(networkStateReceiver);
+        super.onPause();
+    }
+
+    private void onNetworkChange(NetworkInfo networkInfo) {
+        if (networkInfo != null) {
+            if (networkInfo.getState() == NetworkInfo.State.CONNECTED) {
+                Toast.makeText (this, "CONECTADO: El almacenamiento remoto está activado.", Toast.LENGTH_SHORT).show ();
+            } else {
+                Toast.makeText (this, "DESCONECTADO: El almacenamiento local está activado.", Toast.LENGTH_SHORT).show ();
+            }
+        }
+    }
 
 }

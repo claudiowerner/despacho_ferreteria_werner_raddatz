@@ -2,9 +2,15 @@ package com.example.despachoferreteriaswernerraddatz;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -113,28 +119,6 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
-
-
-
-
-    private void disp_conectado() {
-        Toast.makeText (this, "CONECTADO: El almacenamiento remoto está activado.", Toast.LENGTH_SHORT).show ();
-        //llamada a la clase ConnectionSQLiteHelper.java
-
-        ConnectionSQLiteHelper conn = new ConnectionSQLiteHelper (this, "bd_interna_despacho_wyr", null, 1);
-        /* DESCRIPCION LLAMADA A CLASE ConnectionSQLiteHelper.java
-         *   (context: this): Es una clase abstracta que implementa Android. Permite acceder a los recursos específicos
-         * de la aplicación y a sus clases, así como llamar al padre para realizar operaciones a nivel de la aplicación,
-         * como lanzar Activities, difundir mensajes por el sistema, recibir Intents, etc.
-         *
-         * (name: "bd_interna_despacho_wyr"): le da el nombre a la base de datos que se creará
-         *
-         * (factory: null):
-         *
-         * (version: 1): indica la versión de la base de datos
-         * */
-
-    }
     private boolean detectar_id_dispositivo(ConnectionSQLiteHelper conn)
     {
         SQLiteDatabase db = conn.getWritableDatabase();
@@ -161,4 +145,39 @@ public class MainActivity extends AppCompatActivity {
         btnRevision.setEnabled (true);
         btnDespacho.setEnabled (true);
     }
+    private BroadcastReceiver networkStateReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                ConnectivityManager manager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+                NetworkInfo ni = manager.getActiveNetworkInfo();
+                onNetworkChange(ni);
+            }
+        };
+
+        @Override
+        public void onResume() {
+            super.onResume();
+            registerReceiver(networkStateReceiver, new IntentFilter (android.net.ConnectivityManager.CONNECTIVITY_ACTION));
+        }
+
+        @Override
+        public void onPause() {
+            unregisterReceiver(networkStateReceiver);
+            super.onPause();
+        }
+
+        private boolean onNetworkChange(NetworkInfo networkInfo) {
+            if (networkInfo != null)
+            {
+                if (networkInfo.getState () == NetworkInfo.State.CONNECTED)
+                {
+                    if (networkInfo.getState () == NetworkInfo.State.CONNECTED)
+                    {
+                        Toast.makeText (this, "CONECTADO: El almacenamiento remoto está activado.", Toast.LENGTH_SHORT).show ();
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
 }
