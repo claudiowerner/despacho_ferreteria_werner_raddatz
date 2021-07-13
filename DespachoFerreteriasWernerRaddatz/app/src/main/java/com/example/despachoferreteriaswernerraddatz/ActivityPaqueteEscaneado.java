@@ -315,31 +315,26 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
     private void onNetworkChange(NetworkInfo networkInfo) {
         if (networkInfo != null)
         {
+            //detecta si está conectado a internet
             if (networkInfo.getState() == NetworkInfo.State.CONNECTED)
             {
                 Toast.makeText (this, "CONECTADO: El almacenamiento remoto está activado.", Toast.LENGTH_SHORT).show ();
             }
+            //detecta si la conexión está suspendida
             if(networkInfo.getState ()==NetworkInfo.State.SUSPENDED)
             {
                 Toast.makeText (this, "Conexión suspendida", Toast.LENGTH_SHORT).show ();
             }
+            //informa si el teléfono está conectándose a internet
             if(networkInfo.getState ()==NetworkInfo.State.CONNECTING)
             {
                 Toast.makeText (this, "Conectando", Toast.LENGTH_SHORT).show ();
             }
-            if(networkInfo.getState ()==NetworkInfo.State.DISCONNECTING)
-            {
-                Toast.makeText (this, "Desconectando", Toast.LENGTH_SHORT).show ();
-            }
-            if(networkInfo.getState ()==NetworkInfo.State.UNKNOWN)
-            {
-                Toast.makeText (this, "Estado de conexión desconocido", Toast.LENGTH_SHORT).show ();
-            }
+            //detecta si el dispositivo se está desconectando de internet
             if(networkInfo.getState ()==NetworkInfo.State.DISCONNECTING)
             {
                 Toast.makeText (this, "Desconectando", Toast.LENGTH_SHORT).show ();
             }
         }
-
     }
 }
