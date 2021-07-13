@@ -287,6 +287,9 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         insert_caja_estatus_reporte.put ("id_dispositivo",fun.obtenerAndroidID (this));
         db.insert ("caja_estatus_reporte",null,insert_caja_estatus_reporte);
     }
+
+
+    /*detección de conexión a internet (puede ser WI-FI o datos)*/
     private BroadcastReceiver networkStateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
