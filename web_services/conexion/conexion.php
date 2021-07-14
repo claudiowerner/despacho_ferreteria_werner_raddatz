@@ -32,6 +32,7 @@
     {
         $conexion = mysqli_connect(host(), user(), pass(), database(), port());
         return $conexion;
+        echo "Conexión: $conexion <br>";
     }
 
 ?>

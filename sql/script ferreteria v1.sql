@@ -1,60 +1,159 @@
-CREATE TABLE caja_estado (
-    cod_barra_caja   VARCHAR(30) 
---  ERROR: VARCHAR2 size not specified 
-     NOT NULL,
-    estatus          NUMERIC(1)
-);
+-- phpMyAdmin SQL Dump
+-- version 5.1.1
+-- https://www.phpmyadmin.net/
+--
+-- Servidor: 127.0.0.1
+-- Tiempo de generación: 14-07-2021 a las 18:18:15
+-- Versión del servidor: 10.4.19-MariaDB
+-- Versión de PHP: 8.0.7
 
-ALTER TABLE caja_estado ADD CONSTRAINT caja_estado_pk PRIMARY KEY ( cod_barra_caja );
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
 
-CREATE TABLE caja_estatus_reporte (
-    cod_barra_caja   VARCHAR(30) 
---  ERROR: VARCHAR2 size not specified 
-     NOT NULL,
-    fecha            VARCHAR(10),
-    hora             VARCHAR(5),
-    estatus          NUMERIC(1),
-    comentario       VARCHAR(1000),
-    id_dispositivo   VARCHAR(30) 
---  ERROR: VARCHAR2 size not specified 
-     NOT NULL
-);
 
-CREATE TABLE dispositivo (
-    id_dispositivo         VARCHAR(30) 
---  ERROR: VARCHAR2 size not specified 
-     NOT NULL,
-    marca_modelo           VARCHAR(30) 
---  ERROR: VARCHAR2 size not specified 
-   ,
-    empleado_id_empleado   VARCHAR(30) 
---  ERROR: VARCHAR2 size not specified 
-     NOT NULL
-);
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
 
-ALTER TABLE dispositivo ADD CONSTRAINT dispositivo_pk PRIMARY KEY ( id_dispositivo );
+--
+-- Base de datos: `bd_despacho_wyr`
+--
 
-CREATE TABLE empleado (
-    id_empleado   VARCHAR(30) 
---  ERROR: VARCHAR2 size not specified 
-     NOT NULL,
-    nombre        VARCHAR(30)
---  ERROR: VARCHAR2 size not specified 
-   ,
-    apellido      VARCHAR(30)
---  ERROR: VARCHAR2 size not specified 
-);
+-- --------------------------------------------------------
 
-ALTER TABLE empleado ADD CONSTRAINT empleado_pk PRIMARY KEY ( id_empleado );
+--
+-- Estructura de tabla para la tabla `caja_estado`
+--
 
-ALTER TABLE caja_estatus_reporte
-    ADD CONSTRAINT caja_estado_fk FOREIGN KEY ( cod_barra_caja )
-        REFERENCES caja_estado ( cod_barra_caja );
+CREATE TABLE `caja_estado` (
+  `cod_barra_caja` varchar(30) NOT NULL,
+  `estatus` decimal(1,0) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-ALTER TABLE dispositivo
-    ADD CONSTRAINT dispositivo_empleado_fk FOREIGN KEY ( empleado_id_empleado )
-        REFERENCES empleado ( id_empleado );
+--
+-- Volcado de datos para la tabla `caja_estado`
+--
 
-ALTER TABLE caja_estatus_reporte
-    ADD CONSTRAINT id_dispositivo_fk FOREIGN KEY ( id_dispositivo )
-        REFERENCES dispositivo ( id_dispositivo );
+INSERT INTO `caja_estado` (`cod_barra_caja`, `estatus`) VALUES
+('12316', '1'),
+('12345', '1');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `caja_estatus_reporte`
+--
+
+CREATE TABLE `caja_estatus_reporte` (
+  `cod_barra_caja` varchar(30) NOT NULL,
+  `num_doc` varchar(50) DEFAULT NULL,
+  `fecha` varchar(10) DEFAULT NULL,
+  `hora` varchar(5) DEFAULT NULL,
+  `estatus` decimal(1,0) DEFAULT NULL,
+  `comentario` varchar(1000) DEFAULT NULL,
+  `id_dispositivo` varchar(30) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Volcado de datos para la tabla `caja_estatus_reporte`
+--
+
+INSERT INTO `caja_estatus_reporte` (`cod_barra_caja`, `num_doc`, `fecha`, `hora`, `estatus`, `comentario`, `id_dispositivo`) VALUES
+('12345', NULL, '10/12/2020', '12:15', '1', NULL, 'imei12345'),
+('12316', NULL, '10/12/2020', '12:15', '1', NULL, 'imei12346'),
+('12345', NULL, '1/1/1', '1:1', '1', '', 'imei12345'),
+('12316', NULL, '07/07/2021', '2.2', '1', NULL, 'imei12345');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `dispositivo`
+--
+
+CREATE TABLE `dispositivo` (
+  `id_dispositivo` varchar(30) NOT NULL,
+  `marca_modelo` varchar(30) DEFAULT NULL,
+  `empleado_id_empleado` varchar(30) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Volcado de datos para la tabla `dispositivo`
+--
+
+INSERT INTO `dispositivo` (`id_dispositivo`, `marca_modelo`, `empleado_id_empleado`) VALUES
+('imei12345', 'Nokia 2.3', '19150634-0'),
+('imei12346', 'Nokia 2.3', '18752880-1');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `empleado`
+--
+
+CREATE TABLE `empleado` (
+  `id_empleado` varchar(30) NOT NULL,
+  `nombre` varchar(30) DEFAULT NULL,
+  `apellido` varchar(30) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Volcado de datos para la tabla `empleado`
+--
+
+INSERT INTO `empleado` (`id_empleado`, `nombre`, `apellido`) VALUES
+('18752880-1', 'Claudio ', 'Fernandez'),
+('19150634-0', 'Claudio ', 'Werner');
+
+--
+-- Índices para tablas volcadas
+--
+
+--
+-- Indices de la tabla `caja_estado`
+--
+ALTER TABLE `caja_estado`
+  ADD PRIMARY KEY (`cod_barra_caja`);
+
+--
+-- Indices de la tabla `caja_estatus_reporte`
+--
+ALTER TABLE `caja_estatus_reporte`
+  ADD KEY `caja_estado_fk` (`cod_barra_caja`),
+  ADD KEY `id_dispositivo_fk` (`id_dispositivo`);
+
+--
+-- Indices de la tabla `dispositivo`
+--
+ALTER TABLE `dispositivo`
+  ADD PRIMARY KEY (`id_dispositivo`),
+  ADD KEY `dispositivo_empleado_fk` (`empleado_id_empleado`);
+
+--
+-- Indices de la tabla `empleado`
+--
+ALTER TABLE `empleado`
+  ADD PRIMARY KEY (`id_empleado`);
+
+--
+-- Restricciones para tablas volcadas
+--
+
+--
+-- Filtros para la tabla `caja_estatus_reporte`
+--
+ALTER TABLE `caja_estatus_reporte`
+  ADD CONSTRAINT `caja_estado_fk` FOREIGN KEY (`cod_barra_caja`) REFERENCES `caja_estado` (`cod_barra_caja`),
+  ADD CONSTRAINT `id_dispositivo_fk` FOREIGN KEY (`id_dispositivo`) REFERENCES `dispositivo` (`id_dispositivo`);
+
+--
+-- Filtros para la tabla `dispositivo`
+--
+ALTER TABLE `dispositivo`
+  ADD CONSTRAINT `dispositivo_empleado_fk` FOREIGN KEY (`empleado_id_empleado`) REFERENCES `empleado` (`id_empleado`);
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

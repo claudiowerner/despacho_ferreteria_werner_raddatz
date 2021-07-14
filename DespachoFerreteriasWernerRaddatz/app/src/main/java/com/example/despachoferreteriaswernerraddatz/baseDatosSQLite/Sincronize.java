@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -92,10 +93,12 @@ public class Sincronize
         });
         queue.add(stringRequest);
     }
-    public void registrarDatosEscaneados(Context context, Drawable drawable, ListView lst)//método que sirve para buscar e imprimir los datos de los clientes
+    public void registrarDatosEscaneados(Context context, String cod_barra, String estatus, String num_doc, String fecha, String hora, String comentario, String id_dispositivo, String marca_modelo, String id_empleado, String nombre_empleado, String apellido_empleado)//método que sirve para registrar los enviados por el dispositivo Android
     {
-        String url = dbConn.host ()+"";
+        String url = dbConn.host ()+"create/create.php";
         RequestQueue queue = Volley.newRequestQueue(context);
+
+        //Los datos se enviarán a través del método GET para evitar la visibilidad de estos
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url, new Response.Listener<String>()
         {
             @Override
@@ -103,17 +106,17 @@ public class Sincronize
             {
                 if(response.length()==1)
                 {
-                    //
+                    fun.dialogoAlerta (context,"¡Aviso!", response.toString ());
                 }
                 else
                 {
-
+                    //
                 }
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                fun.dialogoAlerta (context,"Error de conexión","Asegúrese de que su dispositivo esté conectado a Internet.");
+                Toast.makeText (context, "Tiempo de respuesta agotado. El registro se hizo de manera local.", Toast.LENGTH_SHORT).show ();  
             }
         });
         queue.add(stringRequest);

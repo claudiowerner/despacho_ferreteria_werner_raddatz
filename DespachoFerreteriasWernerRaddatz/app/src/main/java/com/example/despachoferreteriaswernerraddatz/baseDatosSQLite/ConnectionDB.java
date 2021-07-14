@@ -5,6 +5,6 @@ public class ConnectionDB
 {
     public String host()
     {
-        return "localhost/web_services/";
+        return "192.168.1.8/web_services/";
     }
 }
