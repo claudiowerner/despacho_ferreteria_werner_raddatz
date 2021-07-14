@@ -8,27 +8,22 @@
 
     function host()
     {
-        //return 'www.campingplayawerner.cl';
         return 'localhost';
     }
     function user()
     {
-        //return 'cca10445';
-        return 'root';
+        return 'admin_sistemas_wyr';
     }
     function pass()
     {
-        //return 'MxIKhLJ4';
-        return '';
+        return 'adminsistemas123';
     }
     function database()
     {
-        //return 'cca10445_camping_tesis';
-        return 'camping01';
+        return 'bd_despacho_wyr';
     }
     function port()
     {
-        //return '3306';
         return '3306';
     }
 

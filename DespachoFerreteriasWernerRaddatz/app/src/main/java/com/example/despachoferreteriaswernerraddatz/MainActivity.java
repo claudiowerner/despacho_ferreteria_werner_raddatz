@@ -164,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
     public void onPause() {
         unregisterReceiver(networkStateReceiver);
         super.onPause();
-        Toast.makeText (this, "Conectado pero sin internet (private void ONPAUSE())", Toast.LENGTH_SHORT).show ();
+        Toast.makeText (this, "Conectado pero sin internet. El almacenamiento interno está activo.", Toast.LENGTH_SHORT).show ();
         }
 
     private void onNetworkChange(NetworkInfo networkInfo) {

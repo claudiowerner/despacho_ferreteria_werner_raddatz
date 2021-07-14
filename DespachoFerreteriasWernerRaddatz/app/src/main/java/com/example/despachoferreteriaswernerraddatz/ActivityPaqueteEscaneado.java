@@ -335,6 +335,17 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
             {
                 Toast.makeText (this, "Desconectando", Toast.LENGTH_SHORT).show ();
             }
+            //detecta si el dispositivo está desconectado
+            if(networkInfo.getState ()==NetworkInfo.State.DISCONNECTED)
+            {
+                Toast.makeText (this, "DESCONECTADO: El almacenamiento interno está activado", Toast.LENGTH_SHORT).show ();
+            }
         }
+        if(networkInfo.getState ()==NetworkInfo.State.DISCONNECTED||networkInfo == null)
+        {
+            //si el dispositivo está desconectado
+            Toast.makeText (this, "DESCONECTADO: El almacenamiento interno está activado", Toast.LENGTH_SHORT).show ();
+        }
+        fun.dialogoAlerta (this, "Estado de conexión","st: "+networkInfo);
     }
 }
