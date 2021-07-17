@@ -1,19 +1,6 @@
-<?php
-echo "<br>";
-echo "<br>";
-echo "<br>";
-echo "<br>";
-echo "<br>";
-echo "<br>";
-echo "<br>";
-echo "<br>";
-echo "<br>";
-echo "<br>";
-    /**
-    * Esta clase está pensada para crear y modificar registros en la base de datos
+<?php/** 
+    * Esta clase está pensada para crear y modificar registros relacionados con las cajas en la base de datos
     */
-
-    //
     
     require "../conexion/conexion.php";
 
@@ -33,6 +20,7 @@ echo "<br>";
      * En caso de no tener resultado, retornará 0*/
     $contador = 0;
 
+    //si la conexión a la BD es exitosa
     if($conexion_sql)
     {
         $sql_cod_barra = mysqli_query($conexion_sql,"select * from caja_estado where cod_barra_caja = '$cod_barra'");

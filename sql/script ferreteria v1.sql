@@ -32,14 +32,6 @@ CREATE TABLE `caja_estado` (
   `estatus` decimal(1,0) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
---
--- Volcado de datos para la tabla `caja_estado`
---
-
-INSERT INTO `caja_estado` (`cod_barra_caja`, `estatus`) VALUES
-('12316', '1'),
-('12345', '1');
-
 -- --------------------------------------------------------
 
 --
@@ -55,17 +47,6 @@ CREATE TABLE `caja_estatus_reporte` (
   `comentario` varchar(1000) DEFAULT NULL,
   `id_dispositivo` varchar(30) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Volcado de datos para la tabla `caja_estatus_reporte`
---
-
-INSERT INTO `caja_estatus_reporte` (`cod_barra_caja`, `num_doc`, `fecha`, `hora`, `estatus`, `comentario`, `id_dispositivo`) VALUES
-('12345', NULL, '10/12/2020', '12:15', '1', NULL, 'imei12345'),
-('12316', NULL, '10/12/2020', '12:15', '1', NULL, 'imei12346'),
-('12345', NULL, '1/1/1', '1:1', '1', '', 'imei12345'),
-('12316', NULL, '07/07/2021', '2.2', '1', NULL, 'imei12345');
-
 -- --------------------------------------------------------
 
 --
@@ -77,14 +58,6 @@ CREATE TABLE `dispositivo` (
   `marca_modelo` varchar(30) DEFAULT NULL,
   `empleado_id_empleado` varchar(30) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Volcado de datos para la tabla `dispositivo`
---
-
-INSERT INTO `dispositivo` (`id_dispositivo`, `marca_modelo`, `empleado_id_empleado`) VALUES
-('imei12345', 'Nokia 2.3', '19150634-0'),
-('imei12346', 'Nokia 2.3', '18752880-1');
 
 -- --------------------------------------------------------
 
@@ -98,13 +71,6 @@ CREATE TABLE `empleado` (
   `apellido` varchar(30) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
---
--- Volcado de datos para la tabla `empleado`
---
-
-INSERT INTO `empleado` (`id_empleado`, `nombre`, `apellido`) VALUES
-('18752880-1', 'Claudio ', 'Fernandez'),
-('19150634-0', 'Claudio ', 'Werner');
 
 --
 -- Índices para tablas volcadas
