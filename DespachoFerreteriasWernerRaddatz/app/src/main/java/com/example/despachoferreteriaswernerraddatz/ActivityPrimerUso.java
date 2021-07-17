@@ -12,6 +12,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.despachoferreteriaswernerraddatz.baseDatosSQLite.ConnectionSQLiteHelper;
+import com.example.despachoferreteriaswernerraddatz.baseDatosSQLite.CrudBDInterna;
 import com.example.despachoferreteriaswernerraddatz.funciones.Funciones;
 
 import java.util.regex.Matcher;
@@ -55,32 +56,14 @@ public class ActivityPrimerUso extends AppCompatActivity {
                 apellido = edtApellido.getText ().toString ();
                 id_dispositivo = fun.obtenerAndroidID (getApplicationContext ());
                 marca_modelo_dispositivo = fun.obtenerMarcaDispositivo ()+" "+fun.obtenerModeloDispositivo ();
-                if(codigo.equals("")||nombre.equals("")||apellido.equals(""))
-                {
-                    fun.dialogoAlerta (ActivityPrimerUso.this,"¡Aviso!","Debe rellenar todos los campos.\nCodigo: "+codigo+"\nNombre: "+nombre+"\nApellido: "+apellido);
-                }
-                else
-                {
-                    ContentValues regEmpleado = new ContentValues();
-                    ContentValues regDispositivo = new ContentValues();
 
-                    //insertar datos en tabla empleado
-                    regEmpleado.put("id_empleado",codigo);
-                    regEmpleado.put("nombre", nombre);
-                    regEmpleado.put("apellido", apellido);
-                    db.insert("empleado",null,regEmpleado);
-
-                    //insertar datos en tabla id_dispositivo
-                    regDispositivo.put("id_dispositivo",id_dispositivo);
-                    regDispositivo.put("marca_modelo", marca_modelo_dispositivo);
-                    regDispositivo.put("empleado_id_empleado", codigo);
-                    db.insert("dispositivo",null,regDispositivo);
-                    //cerrar activity
-                    Intent intent = new Intent(getApplicationContext (), MainActivity.class);
-                    intent.addCategory(Intent.CATEGORY_HOME);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
-                }
+                //llamada a método de registro
+                CrudBDInterna crud = new CrudBDInterna ();
+                crud.registrarEmpleado (db,getApplicationContext (),codigo,nombre,apellido,id_dispositivo,marca_modelo_dispositivo);
+                Intent intent = new Intent(getApplicationContext (), MainActivity.class);
+                intent.addCategory(Intent.CATEGORY_HOME);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
             }
         });
     }
