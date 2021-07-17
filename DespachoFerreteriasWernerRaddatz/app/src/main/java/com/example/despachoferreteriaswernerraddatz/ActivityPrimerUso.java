@@ -60,6 +60,9 @@ public class ActivityPrimerUso extends AppCompatActivity {
                 //llamada a método de registro
                 CrudBDInterna crud = new CrudBDInterna ();
                 crud.registrarEmpleado (db,getApplicationContext (),codigo,nombre,apellido,id_dispositivo,marca_modelo_dispositivo);
+
+
+
                 Intent intent = new Intent(getApplicationContext (), MainActivity.class);
                 intent.addCategory(Intent.CATEGORY_HOME);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
