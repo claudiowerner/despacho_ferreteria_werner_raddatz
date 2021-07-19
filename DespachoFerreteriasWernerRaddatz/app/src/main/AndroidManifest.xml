@@ -5,6 +5,7 @@
     <!-- Permiso para obtener datos internos del teléfono como IDs -->
     <uses-permission android:name="android.permission.READ_PHONE_STATE" /> <!-- Permiso para acceder al estado de conexión a internet -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
         android:allowBackup="true"
@@ -12,7 +13,10 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.DespachoFerreteriasWernerRaddatz">
+        android:theme="@style/Theme.DespachoFerreteriasWernerRaddatz"
+        android:usesCleartextTraffic="true"
+        >
+
         <activity android:name=".CaptureActivityScanner"
             android:screenOrientation="portrait" /> <!-- definición de pantalla estática -->
         <activity
