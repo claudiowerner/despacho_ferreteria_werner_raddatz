@@ -86,8 +86,9 @@ ALTER TABLE `caja_estado`
 -- Indices de la tabla `caja_estatus_reporte`
 --
 ALTER TABLE `caja_estatus_reporte`
-  ADD KEY `caja_estado_fk` (`cod_barra_caja`),
-  ADD KEY `id_dispositivo_fk` (`id_dispositivo`);
+  ADD KEY `caja_estado_fk` (`cod_barra_caja`);
+
+ALTER TABLE caja_estatus_reporte ADD CONSTRAINT ('id_dispositivo') FOREIGN KEY (id_dispositivo) REFERENCES dispositivo (id_dispositivo) ON UPDATE CASCADE
 
 --
 -- Indices de la tabla `dispositivo`

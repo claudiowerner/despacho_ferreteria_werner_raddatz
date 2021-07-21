@@ -29,14 +29,7 @@ public class CrudBDExterna
     /**llamada a la clase Funciones*/
     Funciones fun = new Funciones ();
 
-    public void registrarDatosEscaneados(Context context,
-                                         String cod_barra,
-                                         String estatus,
-                                         String num_doc,
-                                         String fecha,
-                                         String hora,
-                                         String comentario,
-                                         String id_dispositivo)//método que sirve para registrar los enviados por el dispositivo Android
+    public void registrarDatosEscaneados(Context context, String cod_barra, String estatus, String num_doc, String fecha, String hora, String comentario, String id_dispositivo)//método que sirve para registrar los enviados por el dispositivo Android
     {
         String url = dbConn.host () + "create/create_caja.php?cod_barra="+cod_barra+
                 "&estatus="+estatus+

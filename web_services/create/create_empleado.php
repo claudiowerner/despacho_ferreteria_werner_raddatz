@@ -95,8 +95,12 @@
             {
                 /**actualización de datos del dispositivo. Esto pasará cuando el empleado inicie sesión en un 
                  * nuevo dispositivo  */ 
+                $upd_dis = mysqli_query($conexion_sql, "update dispositivo set id_dispositivo = '$id_dispositivo', marca_modelo = '$marca_modelo' where id_empleado = '$id_empleado' ");
             }
-
+        }
+        else
+        {
+            $upd_dis = mysqli_query($conexion_sql, "update dispositivo set id_dispositivo = '$id_dispositivo', marca_modelo = '$marca_modelo' where id_empleado = '$id_empleado' ");
         }
     }
 ?>

@@ -126,7 +126,7 @@ public class activityFacturaNomina extends AppCompatActivity {
         ConnectionSQLiteHelper conn = new ConnectionSQLiteHelper (this, "bd_interna_despacho_wyr", null, 1);
 
         SQLiteDatabase db = conn.getReadableDatabase ();
-        db.execSQL ("update caja_estatus_reporte set comentario = '"+comentario+"' where num_doc = '"+numDoc+"' and estatus = 3 or estatus = 4");
+        db.execSQL ("update caja_estatus_reporte set comentario = '"+comentario+"' where cod_barra_caja like '%"+numDoc+"%' and comentario ='s/c'");
 
         fun.dialogoAlerta (this, "¡Aviso!","Comentario ingresado exitosamente");
     }
