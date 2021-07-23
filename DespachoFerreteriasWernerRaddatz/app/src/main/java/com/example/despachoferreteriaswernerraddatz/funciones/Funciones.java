@@ -87,11 +87,34 @@ public class Funciones
     //validar formato de codigo de barra
     public boolean validarFormatoCodigoBarra(String codBarra)
     {
-        Pattern patron = Pattern.compile("[A-Z]{3}-[A-Z]{3}[0-9]{6}-[0-9]{3}");
+        //almacena el patrón con el prefijo de la ciudad
+        String pCiudad = "[A-Z]{3}";//supongamos que pCiudad = XXX
+
+        //limite
+        String l = "-";
+
+        // captura el tipo doc. La estructura tendría que ser algo como FAC (factura) o GUI (guía)
+        String tipoDoc = "[A-Z]{3}";// pensemos que tipoDoc = DOC
+
+        // número de factura o guía
+        String numDoc = "[0-9]{6}";// supongamos que numDoc = 123456
+
+        //numero de caja (número indicado al final del código de barras)
+        String numCaja = "[0-9]{3}";// numCaja = XXX
+
+        //El patrón que tendría que validar sería el siguiente: XXX-DOC123456-XXX
+
+        Pattern patron = Pattern.compile(pCiudad+l+tipoDoc+numDoc+l+numCaja);
+
+        //validador de la cadena de caracteres obtenida desde la lectura del código de barras
         Matcher mat = patron.matcher(codBarra);
-        if(mat.matches()) {
+        if(mat.matches())
+        {
+            /*si la cadena de caracteres coincide con el formato contenido en el Pattern patron, el
+            método retornará true*/
             return true;
         }
+        /*si no coincide, retornará false*/
         return false;
     }
 }

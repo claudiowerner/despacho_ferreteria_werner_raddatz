@@ -157,50 +157,7 @@ public class MainActivity extends AppCompatActivity {
         btnDespacho.setEnabled (true);
     }
 
-    private BroadcastReceiver networkStateReceiver = new BroadcastReceiver () {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            ConnectivityManager manager = (ConnectivityManager) context.getSystemService (Context.CONNECTIVITY_SERVICE);
-            NetworkInfo ni = manager.getActiveNetworkInfo ();
-            onNetworkChange (ni);
-        }
-    };
-
-    @Override
-    public void onResume() {
-        super.onResume ();
-        registerReceiver (networkStateReceiver, new IntentFilter (android.net.ConnectivityManager.CONNECTIVITY_ACTION));
-    }
-
-    @Override
-    public void onPause() {
-        unregisterReceiver (networkStateReceiver);
-        super.onPause ();
-    }
-
-    private void onNetworkChange(NetworkInfo networkInfo) {
-        if (networkInfo != null) {
-            if (networkInfo.getState () == NetworkInfo.State.CONNECTED) {
-                //Toast.makeText (this, "CONECTADO: El almacenamiento remoto está activado.", Toast.LENGTH_SHORT).show ();
-            }
-            if (networkInfo.getState () == NetworkInfo.State.SUSPENDED) {
-                //Toast.makeText (this, "Conexión suspendida", Toast.LENGTH_SHORT).show ();
-            }
-            if (networkInfo.getState () == NetworkInfo.State.CONNECTING) {
-                //Toast.makeText (this, "Conectando", Toast.LENGTH_SHORT).show ();
-            }
-            if (networkInfo.getState () == NetworkInfo.State.DISCONNECTING) {
-                //Toast.makeText (this, "Desconectando", Toast.LENGTH_SHORT).show ();
-            }
-            if (networkInfo.getState () == NetworkInfo.State.UNKNOWN) {
-                //Toast.makeText (this, "Estado de conexión desconocido", Toast.LENGTH_SHORT).show ();
-            }
-            if (networkInfo.getState () == NetworkInfo.State.DISCONNECTING) {
-                //Toast.makeText (this, "Desconectando", Toast.LENGTH_SHORT).show ();
-            }
-        }
-    }
-
+    
     //Este método permite ejecutar en segundo plano
     private void tareaAsincrona() {
         Toast.makeText (this, "Tarea asíncrona iniciada", Toast.LENGTH_SHORT).show ();
@@ -225,29 +182,26 @@ public class MainActivity extends AppCompatActivity {
         SQLiteDatabase db = conn.getReadableDatabase ();
 
         Cursor cursor = db.rawQuery ("select * from caja_estado ce join caja_estatus_reporte cer on ce.cod_barra_caja = cer.cod_barra_caja join dispositivo dis on dis.id_dispositivo = cer.id_dispositivo", null);
-        int id = 0;
+
+        //Creación de objetos String para capturar los datos obtenidos de la BD interna
+        String cod_barra, estatus1, num_doc, fecha, hora, estatus2, comentario, id_dispositivo;
+
+        cod_barra = cursor.getString (0);/*cod_barra1*/
+        estatus1 = cursor.getString (1);/*estatus1*/
+        num_doc = cursor.getString (3);/*num:doc1*/
+        fecha = cursor.getString (4);/*fecha1*/
+        hora = cursor.getString (5);/*hora1*/
+        estatus2 = cursor.getString (6);/* estatus2 */
+        comentario = cursor.getString (7);/*comentario*/
+        id_dispositivo = cursor.getString (8);/*id_dispositiv1o*/
+
 
         //Se leerá la base de datos interna
         while (cursor.moveToNext ()) {
-            // se envían los datos recogidos por la BD interna al método que carga los datos a la BD remota
-            actualizarCajaEstadoMySQL (
-                    cursor.getString (0),/*cod_barra1*/
-                    cursor.getString (1),/*estatus1*/
-                    cursor.getString (2),/*cod_barra2*/
-                    cursor.getString (3),/*num:doc1*/
-                    cursor.getString (4),/*fecha1*/
-                    cursor.getString (5),/*hora1*/
-                    cursor.getString (6),/* estatus2 */
-                    cursor.getString (7),/*comentario*/
-                    cursor.getString (8),/*id_dispositiv1o*/
-                    cursor.getString (9),/*id Dispositivo2*/
-                    cursor.getString (10)/*marcamodelo2*/);
-            //
-            System.out.println ("c: "+cursor.getString (0)+
-                    " e: "+cursor.getString (1) +
-                    " f: "+ cursor.getString (4));
-        }
 
+            // se envían los datos recogidos por la BD interna al método que carga los datos a la BD remota
+            actualizarCajaEstadoMySQL (cod_barra, estatus1, num_doc, fecha, hora, estatus2, comentario, id_dispositivo);
+        }
         cursor.close ();
         db.close ();
     }
@@ -255,15 +209,12 @@ public class MainActivity extends AppCompatActivity {
     //actualizar bd remota
     private void actualizarCajaEstadoMySQL(String codBarra1,
                                            String estatus1,
-                                           String codBarra2,
                                            String numDoc,
                                            String fecha,
                                            String hora,
                                            String estatus2,
                                            String comentario,
-                                           String id_dispositivo1,
-                                           String id_dispositivo2,
-                                           String marcaModelo) {
+                                           String id_dispositivo1) {
 
         HttpURLConnection conn1, conn2;// conecta con el servicio que registra los datos en la tabla caja_estado
 
