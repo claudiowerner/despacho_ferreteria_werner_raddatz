@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 14-07-2021 a las 18:18:15
+-- Tiempo de generación: 26-07-2021 a las 15:38:16
 -- Versión del servidor: 10.4.19-MariaDB
 -- Versión de PHP: 8.0.7
 
@@ -47,6 +47,7 @@ CREATE TABLE `caja_estatus_reporte` (
   `comentario` varchar(1000) DEFAULT NULL,
   `id_dispositivo` varchar(30) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- --------------------------------------------------------
 
 --
@@ -56,7 +57,7 @@ CREATE TABLE `caja_estatus_reporte` (
 CREATE TABLE `dispositivo` (
   `id_dispositivo` varchar(30) NOT NULL,
   `marca_modelo` varchar(30) DEFAULT NULL,
-  `empleado_id_empleado` varchar(30) DEFAULT NULL
+  `id_empleado` varchar(30) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -70,7 +71,6 @@ CREATE TABLE `empleado` (
   `nombre` varchar(30) DEFAULT NULL,
   `apellido` varchar(30) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
 
 --
 -- Índices para tablas volcadas
@@ -86,16 +86,14 @@ ALTER TABLE `caja_estado`
 -- Indices de la tabla `caja_estatus_reporte`
 --
 ALTER TABLE `caja_estatus_reporte`
-  ADD KEY `caja_estado_fk` (`cod_barra_caja`);
-
-ALTER TABLE caja_estatus_reporte ADD CONSTRAINT ('id_dispositivo') FOREIGN KEY (id_dispositivo) REFERENCES dispositivo (id_dispositivo) ON UPDATE CASCADE
+  ADD KEY `caja_estado_fk` (`cod_barra_caja`),
+  ADD KEY `id_dispositivo` (`id_dispositivo`);
 
 --
 -- Indices de la tabla `dispositivo`
 --
 ALTER TABLE `dispositivo`
-  ADD PRIMARY KEY (`id_dispositivo`),
-  ADD KEY `dispositivo_empleado_fk` (`empleado_id_empleado`);
+  ADD PRIMARY KEY (`id_dispositivo`);
 
 --
 -- Indices de la tabla `empleado`
@@ -111,14 +109,14 @@ ALTER TABLE `empleado`
 -- Filtros para la tabla `caja_estatus_reporte`
 --
 ALTER TABLE `caja_estatus_reporte`
-  ADD CONSTRAINT `caja_estado_fk` FOREIGN KEY (`cod_barra_caja`) REFERENCES `caja_estado` (`cod_barra_caja`),
-  ADD CONSTRAINT `id_dispositivo_fk` FOREIGN KEY (`id_dispositivo`) REFERENCES `dispositivo` (`id_dispositivo`);
+  ADD CONSTRAINT `caja_estatus_reporte_ibfk_1` FOREIGN KEY (`id_dispositivo`) REFERENCES `dispositivo` (`id_dispositivo`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `cod_barra_caja_fk` FOREIGN KEY (`cod_barra_caja`) REFERENCES `caja_estado` (`cod_barra_caja`) ON UPDATE CASCADE;
 
 --
 -- Filtros para la tabla `dispositivo`
 --
 ALTER TABLE `dispositivo`
-  ADD CONSTRAINT `dispositivo_empleado_fk` FOREIGN KEY (`empleado_id_empleado`) REFERENCES `empleado` (`id_empleado`);
+  ADD CONSTRAINT `id_empleado_fk` FOREIGN KEY (`id_dispositivo`) REFERENCES `empleado` (`id_empleado`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

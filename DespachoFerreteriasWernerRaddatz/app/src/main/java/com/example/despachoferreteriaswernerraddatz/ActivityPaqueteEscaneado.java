@@ -2,41 +2,43 @@ package com.example.despachoferreteriaswernerraddatz;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.BroadcastReceiver;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.example.despachoferreteriaswernerraddatz.baseDatosSQLite.ConnectionDB;
 import com.example.despachoferreteriaswernerraddatz.baseDatosSQLite.ConnectionSQLiteHelper;
+import com.example.despachoferreteriaswernerraddatz.baseDatosSQLite.CrudBDInterna;
+import com.example.despachoferreteriaswernerraddatz.baseDatosSQLite.Sincronizar;
 import com.example.despachoferreteriaswernerraddatz.funciones.Funciones;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import java.util.ArrayList;
 
 public class ActivityPaqueteEscaneado extends AppCompatActivity {
 
     ListView lstElementosEscaneados;
     ImageButton imgButtonEscanear;
+    Button btnDescargarInfo;
     TextView lblModoApp;
 
     Funciones fun = new Funciones ();
@@ -58,6 +60,8 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         imgButtonEscanear = findViewById (R.id.imgButtonEscanear);
         lstElementosEscaneados=findViewById(R.id.lstElementosEscaneados);
         lblModoApp = findViewById (R.id.lblModoApp);
+        btnDescargarInfo = findViewById (R.id.btnDescargarInfo);
+        btnDescargarInfo.setEnabled (false);
 
         //rellenar ListView con datos escaneados según el modo de la app
         llenarListView (modo);
@@ -66,8 +70,8 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         if(modo.equals ("1"))
         {
             lblModoApp.setText (lblModoApp.getText ().toString ()+"REVISIÓN");
-            //acciones de registro en modo REVISIÓN
-
+            Sincronizar sin = new Sincronizar ();
+            descargarDatosTablaCajaEstado ();
         }
         else
         {
@@ -80,6 +84,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
                 if(modo.equals ("3"))
                 {
                     lblModoApp.setText (lblModoApp.getText ().toString ()+"CARGA");
+                    btnDescargarInfo.setEnabled (true);
                 }
                 else
                 {
@@ -105,11 +110,106 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
             }
         });
 
-    }//lectura de código de barra de revisión
+        //botón de descarga de la información
+        btnDescargarInfo.setOnClickListener (new View.OnClickListener () {
+            @Override
+            public void onClick(View v) {
+                descargarDatosTablaCajaEstado ();
+            }
+        });
+
+    }
+
+
+    //metodo que descarga los datos de la tabla caja_estado
+
+
+    /*Este metodo a diferencia de los demás se desarrolló con la librería Volley de Google, que permite
+     conectar el dispositivo Android con los servicios web o web services. */
+    private void descargarDatosTablaCajaEstado()//descarga los datos almacenados en la tabla Caja Estado
+    {
+        final boolean[] aviso = {false};/*booleano que retorna true en caso de que la descarga de datos se haya producido
+        y false en caso de que haya ocurrido algún evento*/
+
+        System.out.println ("Aviso: "+ aviso[0] + "linea 134");
+
+        /*Connection db obtendrá parte del host de los Web Services. Por ejemplo si el host fuese http://www.wyr.cl/web_services,
+         y la dirección de los servicios web se agrega a parte, como se ve más abajo */
+        ConnectionDB c = new ConnectionDB ();
+        //se indica la URL a la que tendrá que acceder el dispositivo para descargar los datos
+        String url = c.host ()+"read/read_caja_estado.php";
+
+        RequestQueue queue = Volley.newRequestQueue(ActivityPaqueteEscaneado.this);
+
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
+            @Override
+            //String response: es el que lee o captura la respuesta entregada por el webservice.
+            public void onResponse(String response) {
+                try
+                {
+                    if (response.length() == 1)
+                    {
+                        //no hay registros o el Web Service no es capaz de retornar resultados
+                    }
+                    else
+                    {
+                        Thread.sleep(1000);
+                        try
+                        {
+                            ConnectionSQLiteHelper conn = new ConnectionSQLiteHelper (getApplicationContext (), "bd_interna_despacho_wyr", null, 1);
+
+                            /*JSONArray se encarga de convertir el arreglo JSON obtenido por el webservice a un
+                            dato humanamente legible y entendible */
+
+                            CrudBDInterna bdInterna = new CrudBDInterna();
+
+                            JSONArray arr = new JSONArray(response);
+                            for (int i = 0; i < arr.length(); i++)
+                            {
+                                aviso[0] = true;
+                                System.out.println ("Aviso: "+ aviso[0]+" linea 170");
+                                bdInterna.registrarCajaEstado (conn,arr.getJSONObject(i).getString("cod_barra_caja"),arr.getJSONObject(i).getString("estatus"));
+                                System.out.println ("Entra a descargar la información.");
+                            }
+                        }
+                        catch (JSONException e)
+                        {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                catch (InterruptedException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            /*en caso de ocurrir un evento de error, se ejecutará el siguiente void o método*/
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                System.out.println ("Error volley:" + error);
+            }
+        });
+        queue.add(stringRequest);
+        System.out.println ("Aviso: "+ aviso[0]+" linea 194");
+
+        /*si boolean aviso es true (expresado como if(aviso)), entregará el mensaje siguiente*/
+        if(aviso[0])
+        {
+            Toast.makeText (this, "MODO OFFLINE ACTIVADO. Puede operar sin conexión a WiFi o datos", Toast.LENGTH_LONG).show ();
+        }
+        else
+        {
+            Toast.makeText (this, "Error al intentar descargar la información. Intente más tarde.", Toast.LENGTH_LONG).show ();
+        }
+
+    }
+
+    //lectura de código de barra de revisión
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
+        //activa la cámara para escanear los códigos de barras
         IntentResult result = IntentIntegrator.parseActivityResult (requestCode, resultCode, data);
-
 
         if (result != null)
         {
@@ -311,57 +411,5 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         insert_caja_estatus_reporte.put ("comentario","s/c");
         insert_caja_estatus_reporte.put ("id_dispositivo",fun.obtenerAndroidID (this));
         db.insert ("caja_estatus_reporte",null,insert_caja_estatus_reporte);
-    }
-    //este método detecta si la caja ya está registrada en la BD
-    private boolean detectarCajaRepetidaMYSQL(String codBarra1, String estatus1)
-    {
-        HttpURLConnection conn1;// conecta con el servicio que registra los datos en la tabla caja_estado
-
-        BufferedReader reader;
-        String line;
-        StringBuffer responseContent = new StringBuffer();
-
-        /*Connection db obtendrá parte del host de los Web Services. Por ejemplo si el host sería http://www.wyr.cl/web_services,
-         y la dirección de los servicios web se agrega a parte, como se ve más abajo */
-        ConnectionDB db = new ConnectionDB ();
-        try {
-            URL url1 = new URL(db.host () + "update/update_caja.php?" +
-                    "cod_barra=" + codBarra1 +
-                    "&estatus=" + estatus1);
-            conn1 = (HttpURLConnection) url1.openConnection ();
-            conn1.setRequestMethod ("GET");
-            conn1.setConnectTimeout (10000);
-            conn1.setReadTimeout (10000);
-
-            int status1 = conn1.getResponseCode();
-            if(status1>500)
-            {
-                reader = new BufferedReader (new InputStreamReader (conn1.getErrorStream ()));
-                while((line = reader.readLine ())!=null)
-                {
-                    responseContent.append (line);
-                }
-                reader.close ();
-            }
-            else
-            {
-                reader = new BufferedReader (new InputStreamReader (conn1.getInputStream ()));
-                while((line = reader.readLine ())!=null)
-                {
-                    responseContent.append(line);
-                }
-            }
-            conn1.disconnect ();
-            System.out.println ("Response content: "+responseContent.toString ());
-        }
-        catch (MalformedURLException e)
-        {
-            e.printStackTrace ();
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace ();
-        }
-        return false;
     }
 }

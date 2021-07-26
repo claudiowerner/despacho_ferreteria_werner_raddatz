@@ -62,15 +62,35 @@ public class MainActivity extends AppCompatActivity {
         SQLiteDatabase db = conn.getWritableDatabase ();
         //Detectar primer uso de la aplicación
         boolean primer_uso = detectar_id_dispositivo (conn);
-        if (primer_uso == true) {
+
+        /*Si se encuentra o detecta que la aplicación ya fue utilizada por primera vez, los botones
+        * de la pantalla principal se activarán*/
+        if (primer_uso == true)
+        {
             activar_botones ();
-        } else {
+        }
+        /*Si no se detecta un primer uso, la app arrojará la pantalla de primer uso, donde se tendrá que
+        * registrar el empleado, otorgando un ID (preferentemente el del GESCOM), nombre y apellido*/
+        else
+        {
             Toast.makeText (this, "Comprobando primer uso...", Toast.LENGTH_SHORT).show ();
             desactivar_botones ();
             //llamada a activity primer uso
             startActivity (intent);
         }
 
+        /*String modo obtiene el modo en el que se encuentra la aplicación. Por ejemplo, si presiona el
+        * botón REVISIÓN, String modo capturará el número 1, y la app realizará las acciones relacionadas
+        * al modo 1 o modo de REVISIÓN.
+        *
+        * Listado de modos y sus significados
+        *
+        * 1: REVISIÓN
+        * 2: DESPACHO
+        * 3: CARGA
+        * 4: ENTREGA
+        *
+        * */
         final String[] modo = {""};
 
         //acciones botón revisión
@@ -85,7 +105,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-        Intent finalIntent1 = intent;
         btnDespacho.setOnClickListener (new View.OnClickListener () {
             @Override
             public void onClick(View v) {
@@ -157,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
         btnDespacho.setEnabled (true);
     }
 
-    
+
     //Este método permite ejecutar en segundo plano
     private void tareaAsincrona() {
         Toast.makeText (this, "Tarea asíncrona iniciada", Toast.LENGTH_SHORT).show ();
@@ -183,24 +202,25 @@ public class MainActivity extends AppCompatActivity {
 
         Cursor cursor = db.rawQuery ("select * from caja_estado ce join caja_estatus_reporte cer on ce.cod_barra_caja = cer.cod_barra_caja join dispositivo dis on dis.id_dispositivo = cer.id_dispositivo", null);
 
-        //Creación de objetos String para capturar los datos obtenidos de la BD interna
-        String cod_barra, estatus1, num_doc, fecha, hora, estatus2, comentario, id_dispositivo;
-
-        cod_barra = cursor.getString (0);/*cod_barra1*/
-        estatus1 = cursor.getString (1);/*estatus1*/
-        num_doc = cursor.getString (3);/*num:doc1*/
-        fecha = cursor.getString (4);/*fecha1*/
-        hora = cursor.getString (5);/*hora1*/
-        estatus2 = cursor.getString (6);/* estatus2 */
-        comentario = cursor.getString (7);/*comentario*/
-        id_dispositivo = cursor.getString (8);/*id_dispositiv1o*/
-
-
         //Se leerá la base de datos interna
         while (cursor.moveToNext ()) {
 
             // se envían los datos recogidos por la BD interna al método que carga los datos a la BD remota
-            actualizarCajaEstadoMySQL (cod_barra, estatus1, num_doc, fecha, hora, estatus2, comentario, id_dispositivo);
+
+
+            actualizarCajaEstadoMySQL (
+                    cursor.getString (0),/*cod_barra1*/
+                    cursor.getString (1),/*estatus1*/
+                    cursor.getString (3),/*num:doc1*/
+                    cursor.getString (4),/*fecha1*/
+                    cursor.getString (5),/*hora1*/
+                    cursor.getString (6),/* estatus2 */
+                    cursor.getString (7),/*comentario*/
+                    cursor.getString (8)/*id_dispositiv1o*/);
+            //
+            System.out.println ("c: "+cursor.getString (0)+
+                    " e: "+cursor.getString (1) +
+                    " f: "+ cursor.getString (4));
         }
         cursor.close ();
         db.close ();

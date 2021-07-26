@@ -1,49 +1,23 @@
 package com.example.despachoferreteriaswernerraddatz.baseDatosSQLite;
 
-import android.app.IntentService;
-import android.content.Intent;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.widget.Toast;
 
-import androidx.annotation.Nullable;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+import com.example.despachoferreteriaswernerraddatz.ActivityPaqueteEscaneado;
 
-import java.util.Timer;
-import java.util.TimerTask;
+import org.json.JSONArray;
+import org.json.JSONException;
 
-public class Sincronizar extends IntentService implements Runnable
+
+public class Sincronizar
 {
 
-    /**
-     * Creates an IntentService.  Invoked by your subclass's constructor.
-     *
-     */
-    public Sincronizar() {
-        super ("");
-    }
-
-    /**
-     * extends IntentService nos sirve en este caso para ejecutar tareas en segundo plano
-     *
-     * Runnable nos permite ejecutar una tarea cada cierto tiempo (el tiempo que sea estimado)
-     *
-     * */
-
-    @Override
-    protected void onHandleIntent(@Nullable Intent intent) {
-        run ();
-    }
-
-    Timer timer;
-    @Override
-    public void run()
-    {
-        timer = new Timer ( ) ;
-        //la Tarea1 se ejecuta pasado 1 segundo y luego periódicamente cada segundo
-        timer.schedule (new Tarea1(),1000,1000) ;
-    }
-    public class Tarea1 extends TimerTask
-    {
-        @Override
-        public void run() {
-            System.out.println ("Ejecutando tarea1 ");
-        }
-    }
+    CrudBDInterna bdInterna = new CrudBDInterna ();
 }

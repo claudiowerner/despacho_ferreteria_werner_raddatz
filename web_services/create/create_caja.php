@@ -1,6 +1,4 @@
 <?php 
-
-    echo "";
     
     require "../conexion/conexion.php";
 
@@ -12,17 +10,6 @@
     $hora = $_GET['hora']; //captura la hora
     $comentario = $_GET['comentario']; //captura la comentario
     $id_dispositivo = $_GET['id_dispositivo']; //captura el id del dispositivo
-
-
-
-    echo "Datos recibidos<br>   
-            $cod_barra<br>   
-            $estatus<br>   
-            $num_doc<br>   
-            $fecha<br>   
-            $hora<br>   
-            $comentario<br>   
-            $id_dispositivo";
 
     $conexion_sql = conexion();
 
@@ -47,7 +34,7 @@
             $sql_cod_barra = mysqli_query($conexion_sql,"insert into caja_estatus_reporte values ('$cod_barra','$num_doc','$fecha','$hora','$estatus','$comentario','$id_dispositivo')");
         }
         echo "comentario: $comentario";
-        $sql_comentario = mysqli_query($conexion_sql, "update caja_estatus_reporte set comentario = '$comentario' where cod_barra_caja like '%$numDoc%' and comentario ='s/c'");
+        //$sql_comentario = mysqli_query($conexion_sql, "update caja_estatus_reporte set comentario = '$comentario' where cod_barra_caja like '%$numDoc%' and comentario ='s/c'");
     }
 
 /*Esta clase está pensada para crear y modificar registros relacionados con las cajas en la base de datos*/

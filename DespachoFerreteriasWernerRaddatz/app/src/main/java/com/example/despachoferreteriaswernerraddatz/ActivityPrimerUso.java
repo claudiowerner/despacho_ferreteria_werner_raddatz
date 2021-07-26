@@ -119,11 +119,11 @@ public class ActivityPrimerUso extends AppCompatActivity {
             public void onResponse(String response) {
                 if (response.length () == 1)
                 {
-                    System.out.println (response);
+                    System.out.println ("Respuesta reg. empleado"+response);
                 }
                 else
                 {
-                    System.out.println (response);
+                    System.out.println ("Respuesta reg. empleado"+response);
                 }
             }
         }, new Response.ErrorListener () {
@@ -131,7 +131,7 @@ public class ActivityPrimerUso extends AppCompatActivity {
             public void onErrorResponse(VolleyError error)
             {
                 Toast.makeText (getApplicationContext (), "Tiempo de espera agotado. De igual manera, el registro se hizo de manera local", Toast.LENGTH_LONG).show ();
-                System.out.println ("Error de Volley; "+error);
+                System.out.println ("Error de Volley: "+error);
             }
         });
         queue.add (stringRequest);
