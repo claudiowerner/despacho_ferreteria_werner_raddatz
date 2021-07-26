@@ -99,7 +99,8 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent (getApplicationContext (), ActivityPaqueteEscaneado.class);
                 modo[0] = "1";
-                intent.putExtra ("modo", modo[0]);//La app entrará en modo 1, que sería modo Revisión
+                /*La app entrará en modo 1, que sería modo Revisión*/
+                intent.putExtra ("modo", modo[0]);
                 startActivity (intent);
             }
         });
@@ -109,8 +110,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent (getApplicationContext (), ActivityPaqueteEscaneado.class);
+                /*La app entrará en modo 2, que sería modo Despacho*/
                 modo[0] = "2";
-                intent.putExtra ("modo", modo[0]);//La app entrará en modo 2, que sería modo Despacho
+                intent.putExtra ("modo", modo[0]);
                 startActivity (intent);
             }
         });
@@ -120,7 +122,8 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent (getApplicationContext (), ActivityPaqueteEscaneado.class);
                 modo[0] = "3";
-                intent.putExtra ("modo", modo[0]);//La app entrará en modo 3, que sería modo Carga
+                /*La app entrará en modo 3, que sería modo Carga*/
+                intent.putExtra ("modo", modo[0]);//
                 startActivity (intent);
             }
         });
@@ -129,7 +132,8 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent (getApplicationContext (), ActivityPaqueteEscaneado.class);
                 modo[0] = "4";
-                intent.putExtra ("modo", modo[0]);//La app entrará en modo 4, que sería modo Entrega
+                /*La app entrará en modo 4, que sería modo Entrega*/
+                intent.putExtra ("modo", modo[0]);
                 startActivity (intent);
             }
         });
@@ -154,7 +158,8 @@ public class MainActivity extends AppCompatActivity {
     private boolean detectar_id_dispositivo(ConnectionSQLiteHelper conn) {
         SQLiteDatabase db = conn.getWritableDatabase ();
         Cursor cursor = db.rawQuery ("select * from dispositivo where id_dispositivo ='" + fun.obtenerAndroidID (this) + "'", null);
-        if (cursor.moveToFirst ()) {
+        if (cursor.moveToFirst ())
+        {
             return true;
         }
         return false;
