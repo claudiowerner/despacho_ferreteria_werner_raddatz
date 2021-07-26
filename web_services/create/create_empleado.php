@@ -22,6 +22,9 @@
     //si la conexión a la BD es exitosa
     if($conexion_sql)
     {
+
+        echo "Conecta<br>";
+
         //verifica si existe el dispositivo relacionado con el ID del dispositivo y el ID del empleado
         $sql_dispositivo = mysqli_query($conexion_sql, "select * from dispositivo d join empleado e on d.id_empleado=e.id_empleado where d.id_dispositivo = '$id_dispositivo'");
         
@@ -31,17 +34,21 @@
         //el contador cambiará su valor de acuerdo a la cantidad de filas que arroje la consulta SQL
         while($mostrar = mysqli_fetch_array($sql_dispositivo))
         {
+            
+            echo "Cuenta la cantidad de dispositivos<br>";
             $contador_dis++;
         }
         //el contador cambiará su valor de acuerdo a la cantidad de filas que arroje la consulta SQL
         while($mostrar = mysqli_fetch_array($sql_empleado))
         {
+            echo "Cuenta la cantidad de empleados<br>";
             $contador_empl++;
         }
 
         //si el $contador == 0, procede a registrar al empleado
         if($contador_empl==0)
         {
+            echo "El contador de empleados es distinto a 0<br>";
             $ins_datos_disp = mysqli_query($conexion_sql, "insert into empleado values ('$id_empleado', '$nombre', '$apellido')");
 
             //verificar si se registró el empleado
@@ -51,6 +58,8 @@
             $empleado = 0;
             while($mostrar = mysqli_fetch_array($sel_empl))
             {
+                
+                echo "Cuenta la cantidad de empleados 2<br>";
                 $empleado++;
             }
 
@@ -68,6 +77,8 @@
         //si el contador == 0, se registrará el dispositivo nuevo
         if($contador_dis==0)
         {
+            
+        echo "Cuenta la cantidad de dispositivos relacionados<br>";
             /**Verificar si el dispositivo desde el cual se está ejecutando la aplicación 
              * está asociado a un empleado o no. Si el dispositivo es nuevo (o nunca ha ejecutado la app),
              * en la BD se actualizará la información del dispositivo relacionado con el ID del usuario 
@@ -83,23 +94,31 @@
             
             while($resultado = mysqli_fetch_array($sel_disp_existente))
             {
+                
+        echo "Cuenta la cantidad de dispositivos registrados<br>";
                 $id_dis_bd = $resultado['id_dispositivo'];
             }
-            
+            $ins_datos_disp = mysqli_query($conexion_sql, "insert into dispositivo values ('$id_dispositivo', '$marca_modelo', '$id_empleado')");
             if($id_dis_bd == "")
             {
+                
+        echo "Inserta datos del dispositivo<br>";
                 //inserción de datos del dispositivo
                 $ins_datos_disp = mysqli_query($conexion_sql, "insert into dispositivo values ('$id_dispositivo', '$marca_modelo', '$id_empleado')");
+                echo "insert into dispositivo values (ID DISP: '$id_dispositivo', MARCA:'$marca_modelo', EMPLEADO:'$id_empleado')";
             }
             else
             {
                 /**actualización de datos del dispositivo. Esto pasará cuando el empleado inicie sesión en un 
                  * nuevo dispositivo  */ 
+                
+        echo "Actualiza datos del dispositivo<br>";
                 $upd_dis = mysqli_query($conexion_sql, "update dispositivo set id_dispositivo = '$id_dispositivo', marca_modelo = '$marca_modelo' where id_empleado = '$id_empleado' ");
             }
         }
         else
         {
+            echo "Actualiza datos del dispositivo 2<br>";
             $upd_dis = mysqli_query($conexion_sql, "update dispositivo set id_dispositivo = '$id_dispositivo', marca_modelo = '$marca_modelo' where id_empleado = '$id_empleado' ");
         }
     }

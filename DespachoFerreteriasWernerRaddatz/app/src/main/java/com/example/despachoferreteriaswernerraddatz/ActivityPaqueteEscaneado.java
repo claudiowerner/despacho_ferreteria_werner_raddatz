@@ -70,8 +70,6 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         if(modo.equals ("1"))
         {
             lblModoApp.setText (lblModoApp.getText ().toString ()+"REVISIÓN");
-            Sincronizar sin = new Sincronizar ();
-            descargarDatosTablaCajaEstado ();
         }
         else
         {
@@ -113,7 +111,8 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         //botón de descarga de la información
         btnDescargarInfo.setOnClickListener (new View.OnClickListener () {
             @Override
-            public void onClick(View v) {
+            public void onClick(View v)
+            {
                 descargarDatosTablaCajaEstado ();
             }
         });
@@ -130,8 +129,6 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
     {
         final boolean[] aviso = {false};/*booleano que retorna true en caso de que la descarga de datos se haya producido
         y false en caso de que haya ocurrido algún evento*/
-
-        System.out.println ("Aviso: "+ aviso[0] + "linea 134");
 
         /*Connection db obtendrá parte del host de los Web Services. Por ejemplo si el host fuese http://www.wyr.cl/web_services,
          y la dirección de los servicios web se agrega a parte, como se ve más abajo */
@@ -167,15 +164,24 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
                             for (int i = 0; i < arr.length(); i++)
                             {
                                 aviso[0] = true;
-                                System.out.println ("Aviso: "+ aviso[0]+" linea 170");
                                 bdInterna.registrarCajaEstado (conn,arr.getJSONObject(i).getString("cod_barra_caja"),arr.getJSONObject(i).getString("estatus"));
-                                System.out.println ("Entra a descargar la información.");
-                            }
+                                }
                         }
+
                         catch (JSONException e)
                         {
                             e.printStackTrace();
                         }
+
+                        /*si boolean aviso es true (expresado como if(aviso)), entregará el mensaje siguiente*/
+                    }
+                    if(aviso[0])
+                    {
+                        Toast.makeText (getApplicationContext (), "MODO OFFLINE ACTIVADO. Puede operar sin conexión a WiFi o datos", Toast.LENGTH_LONG).show ();
+                    }
+                    else
+                    {
+                        Toast.makeText (getApplicationContext (), "Error al intentar descargar la información. Intente más tarde.", Toast.LENGTH_LONG).show ();
                     }
                 }
                 catch (InterruptedException e)
@@ -191,17 +197,6 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
             }
         });
         queue.add(stringRequest);
-        System.out.println ("Aviso: "+ aviso[0]+" linea 194");
-
-        /*si boolean aviso es true (expresado como if(aviso)), entregará el mensaje siguiente*/
-        if(aviso[0])
-        {
-            Toast.makeText (this, "MODO OFFLINE ACTIVADO. Puede operar sin conexión a WiFi o datos", Toast.LENGTH_LONG).show ();
-        }
-        else
-        {
-            Toast.makeText (this, "Error al intentar descargar la información. Intente más tarde.", Toast.LENGTH_LONG).show ();
-        }
 
     }
 

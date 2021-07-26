@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 26-07-2021 a las 15:38:16
+-- Tiempo de generación: 26-07-2021 a las 22:11:41
 -- Versión del servidor: 10.4.19-MariaDB
 -- Versión de PHP: 8.0.7
 
@@ -71,53 +71,16 @@ CREATE TABLE `empleado` (
   `nombre` varchar(30) DEFAULT NULL,
   `apellido` varchar(30) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Índices para tablas volcadas
---
-
---
--- Indices de la tabla `caja_estado`
---
-ALTER TABLE `caja_estado`
-  ADD PRIMARY KEY (`cod_barra_caja`);
-
---
--- Indices de la tabla `caja_estatus_reporte`
---
-ALTER TABLE `caja_estatus_reporte`
-  ADD KEY `caja_estado_fk` (`cod_barra_caja`),
-  ADD KEY `id_dispositivo` (`id_dispositivo`);
-
---
--- Indices de la tabla `dispositivo`
---
-ALTER TABLE `dispositivo`
-  ADD PRIMARY KEY (`id_dispositivo`);
-
---
--- Indices de la tabla `empleado`
---
-ALTER TABLE `empleado`
-  ADD PRIMARY KEY (`id_empleado`);
-
---
--- Restricciones para tablas volcadas
---
-
---
--- Filtros para la tabla `caja_estatus_reporte`
---
-ALTER TABLE `caja_estatus_reporte`
-  ADD CONSTRAINT `caja_estatus_reporte_ibfk_1` FOREIGN KEY (`id_dispositivo`) REFERENCES `dispositivo` (`id_dispositivo`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `cod_barra_caja_fk` FOREIGN KEY (`cod_barra_caja`) REFERENCES `caja_estado` (`cod_barra_caja`) ON UPDATE CASCADE;
-
---
--- Filtros para la tabla `dispositivo`
---
-ALTER TABLE `dispositivo`
-  ADD CONSTRAINT `id_empleado_fk` FOREIGN KEY (`id_dispositivo`) REFERENCES `empleado` (`id_empleado`) ON DELETE CASCADE;
 COMMIT;
+
+
+ALTER TABLE `caja_estado` ADD PRIMARY KEY(`cod_barra_caja`);
+ALTER TABLE `caja_estatus_reporte` ADD CONSTRAINT `cod_barra_caja_fk` FOREIGN KEY (`cod_barra_caja`) REFERENCES `caja_estado`(`cod_barra_caja`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `dispositivo` ADD PRIMARY KEY(`id_dispositivo`);
+ALTER TABLE `caja_estatus_reporte` ADD CONSTRAINT `id_dispositivo_fk` FOREIGN KEY (`id_dispositivo`) REFERENCES `dispositivo`(`id_dispositivo`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `empleado` ADD PRIMARY KEY(`id_empleado`);
+ALTER TABLE `dispositivo` ADD CONSTRAINT `id_empleado_fk` FOREIGN KEY (`id_empleado`) REFERENCES `empleado`(`id_empleado`) ON DELETE CASCADE ON UPDATE CASCADE;
+
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

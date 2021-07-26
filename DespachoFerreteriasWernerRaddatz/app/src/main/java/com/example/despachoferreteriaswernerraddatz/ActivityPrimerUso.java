@@ -47,9 +47,6 @@ public class ActivityPrimerUso extends AppCompatActivity {
     EditText edtCodigo, edtNombre, edtApellido;
     Button btnRegistrar;
 
-    //llamada a clase funciones
-    Funciones fun = new Funciones();
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
