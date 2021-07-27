@@ -73,6 +73,7 @@ public class ActivityNomina extends AppCompatActivity {
         });
     }
 
+    //
 
     private void llenarListView()
     {

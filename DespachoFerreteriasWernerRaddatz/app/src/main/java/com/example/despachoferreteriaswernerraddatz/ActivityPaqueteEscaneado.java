@@ -2,6 +2,8 @@ package com.example.despachoferreteriaswernerraddatz;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
@@ -24,7 +26,6 @@ import com.android.volley.toolbox.Volley;
 import com.example.despachoferreteriaswernerraddatz.baseDatosSQLite.ConnectionDB;
 import com.example.despachoferreteriaswernerraddatz.baseDatosSQLite.ConnectionSQLiteHelper;
 import com.example.despachoferreteriaswernerraddatz.baseDatosSQLite.CrudBDInterna;
-import com.example.despachoferreteriaswernerraddatz.baseDatosSQLite.Sincronizar;
 import com.example.despachoferreteriaswernerraddatz.funciones.Funciones;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
@@ -42,6 +43,13 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
     TextView lblModoApp;
 
     Funciones fun = new Funciones ();
+
+    // Esta variable permitirá rellenar el listado con los materiales escaneados
+    String[] llenarListViewVacia = {"No existen datos"};
+
+    /*ConnectionDB obtendrá parte del host de los Web Services. Por ejemplo si el host fuese http://www.wyr.cl/web_services,
+         y la dirección de los servicios web se agrega a parte, como se ve más abajo */
+    ConnectionDB c = new ConnectionDB ();
 
     //llamada a clase ConnectionSQLiteHelper
     ConnectionSQLiteHelper conn = new ConnectionSQLiteHelper (this, "bd_interna_despacho_wyr", null, 1);
@@ -64,29 +72,34 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         btnDescargarInfo.setEnabled (false);
 
         //rellenar ListView con datos escaneados según el modo de la app
-        llenarListView (modo);
+        //llenarListView(modo);
+
 
         //comparación modo app
         if(modo.equals ("1"))
         {
             lblModoApp.setText (lblModoApp.getText ().toString ()+"REVISIÓN");
+            llenarListViewSQL(modo);
         }
         else
         {
             if(modo.equals ("2"))
             {
                 lblModoApp.setText (lblModoApp.getText ().toString ()+"DESPACHO");
+                llenarListViewSQL(modo);
             }
             else
             {
                 if(modo.equals ("3"))
                 {
                     lblModoApp.setText (lblModoApp.getText ().toString ()+"CARGA");
+                    llenarListViewSQL(modo);
                     btnDescargarInfo.setEnabled (true);
                 }
                 else
                 {
                     lblModoApp.setText (lblModoApp.getText ().toString ()+"ENTREGA");
+                    llenarListViewSQL(modo);
                 }
             }
         }
@@ -98,7 +111,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
             {
                 IntentIntegrator integrador = new IntentIntegrator (ActivityPaqueteEscaneado.this);
                 integrador.setDesiredBarcodeFormats (IntentIntegrator.CODE_128);
-                integrador.setOrientationLocked (false);
+                integrador.setOrientationLocked (true);
                 integrador.setPrompt ("LECTOR CÓDIGO DE BARRA");
                 integrador.setCameraId (0);
                 integrador.setBeepEnabled (true);
@@ -119,22 +132,17 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
 
     }
 
-
-    //metodo que descarga los datos de la tabla caja_estado
-
-
     /*Este metodo a diferencia de los demás se desarrolló con la librería Volley de Google, que permite
      conectar el dispositivo Android con los servicios web o web services. */
     private void descargarDatosTablaCajaEstado()//descarga los datos almacenados en la tabla Caja Estado
     {
+        Toast.makeText (this, "Descargando información disponible.", Toast.LENGTH_SHORT).show ();
         final boolean[] aviso = {false};/*booleano que retorna true en caso de que la descarga de datos se haya producido
         y false en caso de que haya ocurrido algún evento*/
 
-        /*Connection db obtendrá parte del host de los Web Services. Por ejemplo si el host fuese http://www.wyr.cl/web_services,
-         y la dirección de los servicios web se agrega a parte, como se ve más abajo */
-        ConnectionDB c = new ConnectionDB ();
+
         //se indica la URL a la que tendrá que acceder el dispositivo para descargar los datos
-        String url = c.host ()+"read/read_caja_estado.php";
+        String url = c.host ()+"read/read_caja_estatus_reporte_descarga.php";
 
         RequestQueue queue = Volley.newRequestQueue(ActivityPaqueteEscaneado.this);
 
@@ -146,7 +154,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
                 {
                     if (response.length() == 1)
                     {
-                        //no hay registros o el Web Service no es capaz de retornar resultados
+                        /*no hay registros o el Web Service no es capaz de retornar resultados*/
                     }
                     else
                     {
@@ -165,7 +173,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
                             {
                                 aviso[0] = true;
                                 bdInterna.registrarCajaEstado (conn,arr.getJSONObject(i).getString("cod_barra_caja"),arr.getJSONObject(i).getString("estatus"));
-                                }
+                            }
                         }
 
                         catch (JSONException e)
@@ -256,16 +264,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
                     }
                     else
                     {
-                        paso_anterior = detectar_paso_anterior (conn,cod_barra,1);
-                        if(paso_anterior==false)
-                        {
-                            fun.dialogoAlerta (this,"¡Aviso!", "Esta caja no ha pasado por el proceso de revisión");
-                        }
-                        else
-                        {
-                            insercion (2,cod_barra);
-                            actualizarEstatusCajaCodBarra (cod_barra,conn,modo);
-                        }
+                        detectarPasoAnteriorSQL (cod_barra,Integer.parseInt (modo));
                     }
                 }
                 else
@@ -282,12 +281,12 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
                             paso_anterior = detectar_paso_anterior (conn,cod_barra,2);
                             if(paso_anterior==false)
                             {
-                                fun.dialogoAlerta (this,"¡Aviso!", "Esta caja no ha pasado por el proceso de despacho");
+                                fun.dialogoAlerta(this,"¡Aviso!", "Esta caja no ha pasado por el proceso de despacho");
                             }
                             else
                             {
                                 insercion (3,cod_barra);
-                                actualizarEstatusCajaCodBarra (cod_barra,conn,modo);
+                                actualizarEstatusCajaCodBarra(cod_barra,conn,modo);
                             }
                         }
                     }
@@ -323,7 +322,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
                     "Dato obtenido: "+cod_barra);
         }
     }
-    //registro interno en la base de datos
+    //Modificación interna del estado de la caja en la tabla caja_estado
     private void actualizarEstatusCajaCodBarra(String cod_barra, ConnectionSQLiteHelper conn, String estatus)
     {
         //llamada al StringTokenizer, que separa la cadena de caracteres obtenida del código de barra. Lo separará por cada "-" que tenga la cadena
@@ -336,6 +335,8 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         db.execSQL ("update caja_estado set estatus = '"+estatus+"' where cod_barra_caja = '"+cod_barra+"'");
     }
 
+    /*Metodo booleano que detecta si la caja escaneada está repetida o no. Si está repetida, retornará
+    * valor true, y en caso contrario retornará false*/
     private boolean detectar_caja_repetida(ConnectionSQLiteHelper conn, String cod_barra, String estatus)//detecta si la caja ya ha sido despachada/revisada/entregada/cargada, evitando así doble pickeo
     {
         //llamada al método que consulta en la BD remota
@@ -349,6 +350,9 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         return false;
     }
 
+    /*Este metodo detecta si la caja ya pasó por el proceso anterior en la BD interna. Por ejemplo
+     * si se escanéa en modo de carga, la aplicación revisará si la caja pasó por el proceso de despacho. En caso de
+     * cumplirse la condición, retornará true, y en caso contrario, false.*/
     private boolean detectar_paso_anterior(ConnectionSQLiteHelper conn, String cod_barra, int estatus)//detecta si la caja ya pasó por el paso anterior, es decir, si la caja
     {
         SQLiteDatabase db = conn.getWritableDatabase();
@@ -360,7 +364,69 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         return false;
     }
 
-    //llena el listview con la información que arroje la siguiente consulta a la base de datos
+
+
+    /*Este metodo detecta si la caja ya pasó por el proceso anterior en la BD remota. Por ejemplo
+     * si se escanéa en modo de carga, la aplicación revisará si la caja pasó por el proceso de despacho. En caso de
+     * cumplirse la condición, retornará true, y en caso contrario, false.*/
+    @SuppressLint("ResourceAsColor")
+    private void detectarPasoAnteriorSQL(String cod_barra, int status)//detecta si la caja ya pasó por el paso anterior, es decir, si la caja
+    {
+        System.out.println ("llama al metodo SQL");
+
+        //progressDialog
+        final ProgressDialog progressDialog;
+        progressDialog = new ProgressDialog(ActivityPaqueteEscaneado.this);
+        progressDialog.setIcon(R.mipmap.ic_launcher);
+        progressDialog.setMessage("Cargando...");
+        String url = c.host()+"read/read_caja_estatus_reporte.php?estatus="+status;
+        RequestQueue queue = Volley.newRequestQueue(this);
+
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url, new Response.Listener<String>()
+        {
+            @Override
+            public void onResponse(String response)
+            {
+                System.out.println ("entra al onResponse");
+                progressDialog.show();
+                if(response.equals (""))
+                {
+                    System.out.println ("Respuesta obtenida del response PHP: "+response);
+                }
+                else
+                {
+                    System.out.println ("Respuesta obtenida del response PHP: "+response);
+                    if(modo.equals ("1"))
+                    {
+                        fun.dialogoAlerta (ActivityPaqueteEscaneado.this, "¡Aviso!", "Esta caja ya pasó por el proceso de revisión");
+                    }
+                    if(modo.equals ("2"))
+                    {
+                        fun.dialogoAlerta (ActivityPaqueteEscaneado.this, "¡Aviso!", "Esta caja ya pasó por el proceso de despacho");
+                    }
+                    if(modo.equals ("3"))
+                    {
+                        fun.dialogoAlerta (ActivityPaqueteEscaneado.this, "¡Aviso!", "Esta caja ya pasó por el proceso de carga");
+                    }
+                    else
+                    {
+                        fun.dialogoAlerta (ActivityPaqueteEscaneado.this, "¡Aviso!", "Esta caja ya pasó por el proceso de entrega");
+                    }
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                progressDialog.dismiss();
+            }
+        });
+        queue.add(stringRequest);
+
+        ArrayAdapter<String> arrayOpciones = new ArrayAdapter<String>(this, android.R.layout.list_content,llenarListViewVacia);
+        lstElementosEscaneados.setAdapter (arrayOpciones);
+    }
+
+    //llena el listview con la información que arroje la siguiente consulta a la base de datos interna
     private void llenarListView(String status)
     {
         SQLiteDatabase db = conn.getReadableDatabase ();
@@ -377,7 +443,81 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
             id++;
             array.add("("+id+") \tCodigo: "+cursor.getString (0)+"\n\t\t\tHora: "+cursor.getString (3));
         }
-        ArrayAdapter<String> arrayOpciones = new ArrayAdapter<String>(this, android.R.layout.simple_expandable_list_item_1,array);
+        ArrayAdapter<String> arrayOpciones = new ArrayAdapter<String>(this, android.R.layout.activity_list_item,array);
+        lstElementosEscaneados.setAdapter (arrayOpciones);
+    }
+    //llena el listview con la información que arroje la siguiente consulta a la base de datos interna
+    private void llenarListViewSQL(String status)
+    {
+        System.out.println ("llama al metodo SQL");
+
+        //progressDialog
+        final ProgressDialog progressDialog;
+        progressDialog = new ProgressDialog(ActivityPaqueteEscaneado.this);
+        progressDialog.setIcon(R.mipmap.ic_launcher);
+        progressDialog.setMessage("Cargando...");
+        progressDialog.show();
+
+        String url = c.host()+"read/read_caja_estatus_reporte.php?estatus="+status;
+        RequestQueue queue = Volley.newRequestQueue(this);
+
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url, new Response.Listener<String>()
+        {
+            @Override
+            public void onResponse(String response)
+            {
+                try
+                {
+                    System.out.println ("entra al try");
+                    progressDialog.show();
+                    ArrayAdapter<String> arrayListaCajasEscaneadas;
+                    if(response.length()==1)
+                    {
+                        System.out.println ("Entra al response.length()==1");
+                        Thread.sleep(1000);
+                        progressDialog.dismiss();
+                        arrayListaCajasEscaneadas = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_expandable_list_item_1, llenarListViewVacia);
+                        lstElementosEscaneados.setAdapter(arrayListaCajasEscaneadas);
+                    }
+                    else
+                    {
+                        System.out.println ("entra al else");
+                        Thread.sleep(1000);
+                        progressDialog.dismiss();
+                        try
+                        {
+                            System.out.println ("entra al try");
+                            JSONArray arr = new JSONArray(response);
+                            llenarListViewVacia = new String[arr.length()];
+                            for(int i = 0; i < arr.length(); i++)
+                            {
+                                System.out.println ("rellena el listview con los datos");
+                                llenarListViewVacia[i] = "("+(i+1)+") \tCodigo: "+arr.getJSONObject(i).getString("cod_barra_caja")+"\n\t\t\tHora: "+arr.getJSONObject(i).getString("hora");
+                            }
+                            arrayListaCajasEscaneadas = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_expandable_list_item_1, llenarListViewVacia);
+                            lstElementosEscaneados.setAdapter(arrayListaCajasEscaneadas);
+                            progressDialog.dismiss ();
+                        }
+                        catch(JSONException e)
+                        {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                catch (InterruptedException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+               progressDialog.dismiss();
+            }
+        });
+        queue.add(stringRequest);
+
+        ArrayAdapter<String> arrayOpciones = new ArrayAdapter<String>(this, android.R.layout.simple_expandable_list_item_1,llenarListViewVacia);
         lstElementosEscaneados.setAdapter (arrayOpciones);
     }
 

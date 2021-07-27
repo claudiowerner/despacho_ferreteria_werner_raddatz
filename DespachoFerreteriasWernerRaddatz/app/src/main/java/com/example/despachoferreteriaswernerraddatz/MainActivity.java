@@ -187,7 +187,6 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText (this, "Tarea asíncrona iniciada", Toast.LENGTH_SHORT).show ();
         Timer timer = new Timer ("SincronizarBD");
 
-        final int[] i = {0};
 
         TimerTask tarea = new TimerTask () {
             @Override
@@ -202,6 +201,7 @@ public class MainActivity extends AppCompatActivity {
 
     /*lectura de datos de la base de datos interna. Tabla caja_estado */
     private void leerCajaEstado() {
+
         ConnectionSQLiteHelper conn = new ConnectionSQLiteHelper (this, "bd_interna_despacho_wyr", null, 1);
         SQLiteDatabase db = conn.getReadableDatabase ();
 
