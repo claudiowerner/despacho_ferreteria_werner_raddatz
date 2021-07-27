@@ -5,9 +5,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -17,6 +20,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Network;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -222,8 +226,16 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
             }
             else
             {
-                registro_bd_interna (result.getContents (),conn);
-                llenarListView (modo);
+                if(modo.equals("4"))
+                {
+                    //si el modo de la aplicación es el
+                    llenarListViewBDInterna (modo);
+                }
+                else
+                {
+                    detectarCajaRepetida (result.getContents (),modo);
+                    //llenarListViewSQL (modo);
+                }
             }
         }
         else
@@ -236,14 +248,13 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
     private void registro_bd_interna(String cod_barra, ConnectionSQLiteHelper conn)
     {
         boolean caja_repetida, paso_anterior, formato;
-        int status = Integer.parseInt (modo);
         formato = fun.validarFormatoCodigoBarra (cod_barra);
         //Si el booleano caja_repetida = true, es porque la caja ya está procesada y registrada en la BD*
         if(formato==true)
         {
             if(modo.equals ("1"))
             {
-                caja_repetida = detectar_caja_repetida (conn,cod_barra,modo);
+                caja_repetida = detectarCajaRepetida (cod_barra,modo);
                 if(caja_repetida)
                 {
                     fun.dialogoAlerta (this, "¡Aviso!","La caja "+cod_barra+" ya está revisada");
@@ -257,49 +268,40 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
             {
                 if(modo.equals ("2"))
                 {
-                    caja_repetida = detectar_caja_repetida (conn,cod_barra,modo);
+                    caja_repetida = detectarCajaRepetida (cod_barra,modo);
                     if(caja_repetida)
                     {
                         fun.dialogoAlerta (this, "¡Aviso!","La caja "+cod_barra+" ya está despachada");
                     }
                     else
                     {
-                        detectarPasoAnteriorSQL (cod_barra,Integer.parseInt (modo));
+                        detectarPasoAnteriorSQL (modo);
                     }
                 }
                 else
                 {
                     if(modo.equals ("3"))
                     {
-                        caja_repetida = detectar_caja_repetida (conn,cod_barra,modo);
+                        caja_repetida = detectarCajaRepetida (cod_barra,modo);
                         if(caja_repetida)
                         {
                             fun.dialogoAlerta (this, "¡Aviso!","La caja "+cod_barra+" ya está cargada en el camión");
                         }
                         else
                         {
-                            paso_anterior = detectar_paso_anterior (conn,cod_barra,2);
-                            if(paso_anterior==false)
-                            {
-                                fun.dialogoAlerta(this,"¡Aviso!", "Esta caja no ha pasado por el proceso de despacho");
-                            }
-                            else
-                            {
-                                insercion (3,cod_barra);
-                                actualizarEstatusCajaCodBarra(cod_barra,conn,modo);
-                            }
+                            //
                         }
                     }
                     else
                     {
-                        caja_repetida = detectar_caja_repetida (conn,cod_barra,modo);
+                        caja_repetida = detectarCajaRepetida (cod_barra,modo);
                         if(caja_repetida)
                         {
                             fun.dialogoAlerta (this, "¡Aviso!","La caja "+cod_barra+" ya está entregada");
                         }
                         else
                         {
-                            paso_anterior = detectar_paso_anterior (conn,cod_barra,3);
+                            /*paso_anterior = detectar_paso_anterior (conn,cod_barra,3);
                             if(paso_anterior==false)
                             {
                                 fun.dialogoAlerta (this,"¡Aviso!", "Esta caja no ha pasado por el proceso de carga");
@@ -308,7 +310,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
                             {
                                 insercion (4,cod_barra);
                                 actualizarEstatusCajaCodBarra (cod_barra,conn,modo);
-                            }
+                            }*/
                         }
                     }
                 }
@@ -337,81 +339,31 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
 
     /*Metodo booleano que detecta si la caja escaneada está repetida o no. Si está repetida, retornará
     * valor true, y en caso contrario retornará false*/
-    private boolean detectar_caja_repetida(ConnectionSQLiteHelper conn, String cod_barra, String estatus)//detecta si la caja ya ha sido despachada/revisada/entregada/cargada, evitando así doble pickeo
+    private boolean detectarCajaRepetida(String cod_barra, String status)//detecta si la caja ya ha sido despachada/revisada/entregada/cargada, evitando así doble pickeo
     {
-        //llamada al método que consulta en la BD remota
-        //boolean bd_repetida = detectarCajaRepetidaMYSQL (cod_barra,estatus);
-        SQLiteDatabase db = conn.getWritableDatabase();
-        Cursor cursor = db.rawQuery ("select * from caja_estatus_reporte where cod_barra_caja ='"+cod_barra+"' and estatus = "+estatus,null);
-        if(cursor.moveToFirst ())
-        {
-            return true;
-        }
-        return false;
-    }
-
-    /*Este metodo detecta si la caja ya pasó por el proceso anterior en la BD interna. Por ejemplo
-     * si se escanéa en modo de carga, la aplicación revisará si la caja pasó por el proceso de despacho. En caso de
-     * cumplirse la condición, retornará true, y en caso contrario, false.*/
-    private boolean detectar_paso_anterior(ConnectionSQLiteHelper conn, String cod_barra, int estatus)//detecta si la caja ya pasó por el paso anterior, es decir, si la caja
-    {
-        SQLiteDatabase db = conn.getWritableDatabase();
-        Cursor cursor = db.rawQuery ("select * from caja_estatus_reporte where cod_barra_caja ='"+cod_barra+"' and estatus = "+estatus,null);
-        while(cursor.moveToNext ())
-        {
-            return true;
-        }
-        return false;
-    }
-
-
-
-    /*Este metodo detecta si la caja ya pasó por el proceso anterior en la BD remota. Por ejemplo
-     * si se escanéa en modo de carga, la aplicación revisará si la caja pasó por el proceso de despacho. En caso de
-     * cumplirse la condición, retornará true, y en caso contrario, false.*/
-    @SuppressLint("ResourceAsColor")
-    private void detectarPasoAnteriorSQL(String cod_barra, int status)//detecta si la caja ya pasó por el paso anterior, es decir, si la caja
-    {
-        System.out.println ("llama al metodo SQL");
+        System.out.println ("llama al metodo SQL Paquete Escaneado caja repetida");
 
         //progressDialog
         final ProgressDialog progressDialog;
         progressDialog = new ProgressDialog(ActivityPaqueteEscaneado.this);
         progressDialog.setIcon(R.mipmap.ic_launcher);
         progressDialog.setMessage("Cargando...");
-        String url = c.host()+"read/read_caja_estatus_reporte.php?estatus="+status;
-        RequestQueue queue = Volley.newRequestQueue(this);
+        String url = c.host()+"read/read_caja_estatus_reporte_repetida.php?cod_barra_caja="+cod_barra+"&estatus="+status;
+
+        RequestQueue queue = Volley.newRequestQueue (ActivityPaqueteEscaneado.this);
 
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url, new Response.Listener<String>()
         {
             @Override
             public void onResponse(String response)
             {
-                System.out.println ("entra al onResponse");
-                progressDialog.show();
-                if(response.equals (""))
+                if(response.length ()==0)
                 {
-                    System.out.println ("Respuesta obtenida del response PHP: "+response);
+                    insercion (Integer.parseInt (modo),cod_barra);
                 }
                 else
                 {
-                    System.out.println ("Respuesta obtenida del response PHP: "+response);
-                    if(modo.equals ("1"))
-                    {
-                        fun.dialogoAlerta (ActivityPaqueteEscaneado.this, "¡Aviso!", "Esta caja ya pasó por el proceso de revisión");
-                    }
-                    if(modo.equals ("2"))
-                    {
-                        fun.dialogoAlerta (ActivityPaqueteEscaneado.this, "¡Aviso!", "Esta caja ya pasó por el proceso de despacho");
-                    }
-                    if(modo.equals ("3"))
-                    {
-                        fun.dialogoAlerta (ActivityPaqueteEscaneado.this, "¡Aviso!", "Esta caja ya pasó por el proceso de carga");
-                    }
-                    else
-                    {
-                        fun.dialogoAlerta (ActivityPaqueteEscaneado.this, "¡Aviso!", "Esta caja ya pasó por el proceso de entrega");
-                    }
+                    fun.dialogoAlerta (ActivityPaqueteEscaneado.this, "¡Aviso!", response);
                 }
             }
         }, new Response.ErrorListener() {
@@ -422,12 +374,46 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         });
         queue.add(stringRequest);
 
+        return false;
+    }
+
+    /*Este metodo detecta si la caja ya pasó por el proceso anterior en la BD remota. Por ejemplo
+     * si se escanéa en modo de carga, la aplicación revisará si la caja pasó por el proceso de despacho. En caso de
+     * cumplirse la condición, retornará true, y en caso contrario, false.*/
+    @SuppressLint("ResourceAsColor")
+    private void detectarPasoAnteriorSQL(String status)//detecta si la caja ya pasó por el paso anterior, es decir, si la caja
+    {
+        System.out.println ("llama al metodo SQL");
+
+        //progressDialog
+        final ProgressDialog progressDialog;
+        progressDialog = new ProgressDialog(ActivityPaqueteEscaneado.this);
+        progressDialog.setIcon(R.mipmap.ic_launcher);
+        progressDialog.setMessage("Cargando...");
+        String url = c.host()+"read/read_caja_estatus_reporte.php?estatus="+status;
+
+        RequestQueue queue = Volley.newRequestQueue (ActivityPaqueteEscaneado.this);
+
+        //Los datos se enviarán a través del método GET para evitar la visibilidad de estos
+        StringRequest stringRequest = new StringRequest (Request.Method.GET, url, new Response.Listener<String> () {
+            @Override
+            public void onResponse(String response) {
+                fun.dialogoAlerta (ActivityPaqueteEscaneado.this, "¡Aviso!", response);
+            }
+        }, new Response.ErrorListener () {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Toast.makeText (ActivityPaqueteEscaneado.this, "Tiempo de respuesta agotado. Revise su conexión a la red.", Toast.LENGTH_SHORT).show ();
+            }
+        });
+        queue.add (stringRequest);
+
         ArrayAdapter<String> arrayOpciones = new ArrayAdapter<String>(this, android.R.layout.list_content,llenarListViewVacia);
         lstElementosEscaneados.setAdapter (arrayOpciones);
     }
 
     //llena el listview con la información que arroje la siguiente consulta a la base de datos interna
-    private void llenarListView(String status)
+    private void llenarListViewBDInterna(String status)
     {
         SQLiteDatabase db = conn.getReadableDatabase ();
 
@@ -443,7 +429,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
             id++;
             array.add("("+id+") \tCodigo: "+cursor.getString (0)+"\n\t\t\tHora: "+cursor.getString (3));
         }
-        ArrayAdapter<String> arrayOpciones = new ArrayAdapter<String>(this, android.R.layout.activity_list_item,array);
+        ArrayAdapter<String> arrayOpciones = new ArrayAdapter<String>(this, android.R.layout.simple_expandable_list_item_1,array);
         lstElementosEscaneados.setAdapter (arrayOpciones);
     }
     //llena el listview con la información que arroje la siguiente consulta a la base de datos interna
