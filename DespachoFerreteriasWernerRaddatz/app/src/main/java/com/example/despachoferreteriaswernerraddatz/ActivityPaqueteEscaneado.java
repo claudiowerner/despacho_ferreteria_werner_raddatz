@@ -275,7 +275,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
                     }
                     else
                     {
-                        detectarPasoAnteriorSQL (modo);
+                        detectarPasoAnteriorSQL (modo,cod_barra);
                     }
                 }
                 else
@@ -380,36 +380,48 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
     /*Este metodo detecta si la caja ya pasó por el proceso anterior en la BD remota. Por ejemplo
      * si se escanéa en modo de carga, la aplicación revisará si la caja pasó por el proceso de despacho. En caso de
      * cumplirse la condición, retornará true, y en caso contrario, false.*/
-    @SuppressLint("ResourceAsColor")
-    private void detectarPasoAnteriorSQL(String status)//detecta si la caja ya pasó por el paso anterior, es decir, si la caja
+    private boolean detectarPasoAnteriorSQL(String cod_barra, String status)//detecta si la caja ya ha sido despachada/revisada/entregada/cargada, evitando así doble pickeo
     {
-        System.out.println ("llama al metodo SQL");
+        System.out.println ("llama al metodo SQL paso anterior");
 
+        boolean[] r = new boolean[1];
+        r[0] = false;
         //progressDialog
         final ProgressDialog progressDialog;
         progressDialog = new ProgressDialog(ActivityPaqueteEscaneado.this);
         progressDialog.setIcon(R.mipmap.ic_launcher);
         progressDialog.setMessage("Cargando...");
-        String url = c.host()+"read/read_caja_estatus_reporte.php?estatus="+status;
+        String url = c.host()+"read/read_caja_estatus_reporte_paso_anterior.php?cod_barra_caja="+cod_barra+"&estatus="+status;
 
         RequestQueue queue = Volley.newRequestQueue (ActivityPaqueteEscaneado.this);
 
-        //Los datos se enviarán a través del método GET para evitar la visibilidad de estos
-        StringRequest stringRequest = new StringRequest (Request.Method.GET, url, new Response.Listener<String> () {
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url, new Response.Listener<String>()
+        {
             @Override
-            public void onResponse(String response) {
-                fun.dialogoAlerta (ActivityPaqueteEscaneado.this, "¡Aviso!", response);
+            public void onResponse(String response)
+            {
+
+                System.out.println ("Response paso anterior: "+response);
+
+                r[0] = true;
+                /*if(response.length ()==0)
+                {
+                    insercion (Integer.parseInt (modo),cod_barra);
+                }
+                else
+                {
+                    fun.dialogoAlerta (ActivityPaqueteEscaneado.this, "¡Aviso!", response);
+                }*/
             }
-        }, new Response.ErrorListener () {
+        }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Toast.makeText (ActivityPaqueteEscaneado.this, "Tiempo de respuesta agotado. Revise su conexión a la red.", Toast.LENGTH_SHORT).show ();
+                progressDialog.dismiss();
             }
         });
-        queue.add (stringRequest);
+        queue.add(stringRequest);
 
-        ArrayAdapter<String> arrayOpciones = new ArrayAdapter<String>(this, android.R.layout.list_content,llenarListViewVacia);
-        lstElementosEscaneados.setAdapter (arrayOpciones);
+        return r[0];
     }
 
     //llena el listview con la información que arroje la siguiente consulta a la base de datos interna
@@ -422,6 +434,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         ArrayList array = new ArrayList ();
 
         int id = 0;
+
 
         //String que obtendrá el número de factura
         while (cursor.moveToNext ())
@@ -497,7 +510,8 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
             }
         }, new Response.ErrorListener() {
             @Override
-            public void onErrorResponse(VolleyError error) {
+            public void onErrorResponse(VolleyError error)
+            {
                progressDialog.dismiss();
             }
         });
