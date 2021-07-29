@@ -22,7 +22,6 @@
     }
     else
     {
-        echo "lal";
         $sql = mysqli_query($conexion_sql, "insert into caja_estado values ('$cod_barra','$estatus')");
     }
 

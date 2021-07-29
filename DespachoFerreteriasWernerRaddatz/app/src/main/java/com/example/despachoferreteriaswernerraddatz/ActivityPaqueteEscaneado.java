@@ -2,15 +2,11 @@ package com.example.despachoferreteriaswernerraddatz;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -20,7 +16,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.Network;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -37,6 +32,13 @@ import com.google.zxing.integration.android.IntentResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.URL;
 import java.util.ArrayList;
 
 public class ActivityPaqueteEscaneado extends AppCompatActivity {
@@ -49,7 +51,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
     Funciones fun = new Funciones ();
 
     // Esta variable permitirá rellenar el listado con los materiales escaneados
-    String[] llenarListViewVacia = {"No existen datos"};
+    String[] llenarListViewVacia = {"No existen datos a la fecha "+fun.fecha ()};
 
     /*ConnectionDB obtendrá parte del host de los Web Services. Por ejemplo si el host fuese http://www.wyr.cl/web_services,
          y la dirección de los servicios web se agrega a parte, como se ve más abajo */
@@ -59,6 +61,10 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
     ConnectionSQLiteHelper conn = new ConnectionSQLiteHelper (this, "bd_interna_despacho_wyr", null, 1);
 
     String modo;
+    String modoParaMostrarEnResponse;
+
+    int[] datosDescargados = {0};/*booleano que retorna true en caso de que la descarga de datos se haya producido
+        y false en caso de que haya ocurrido algún evento*/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,8 +72,35 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         setContentView (R.layout.activity_paquete_escaneado);
 
         //recepción de valor enviado desde el MainActivity.java
-        Bundle bundle = getIntent().getExtras();
         modo = getIntent().getStringExtra("modo");
+
+        modoParaMostrarEnResponse = "";
+
+        if(modo.equals ("4"))
+        {
+            modoParaMostrarEnResponse = "ENTREGA";
+        }
+        else
+        {
+            if(modo.equals ("3"))
+            {
+                modoParaMostrarEnResponse = "CARGA";
+            }
+            else
+            {
+                if(modo.equals ("2"))
+                {
+                    modoParaMostrarEnResponse = "DESPACHO";
+                }
+                else
+                {
+                    if(modo.equals ("1"))
+                    {
+                        modoParaMostrarEnResponse = "REVISIÓN";
+                    }
+                }
+            }
+        }
 
         imgButtonEscanear = findViewById (R.id.imgButtonEscanear);
         lstElementosEscaneados=findViewById(R.id.lstElementosEscaneados);
@@ -78,32 +111,33 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         //rellenar ListView con datos escaneados según el modo de la app
         //llenarListView(modo);
 
+        llenarListViewSQL (modo, fun.fecha ());
 
         //comparación modo app
         if(modo.equals ("1"))
         {
             lblModoApp.setText (lblModoApp.getText ().toString ()+"REVISIÓN");
-            llenarListViewSQL(modo);
+            llenarListViewSQL(modo, fun.fecha());
         }
         else
         {
             if(modo.equals ("2"))
             {
                 lblModoApp.setText (lblModoApp.getText ().toString ()+"DESPACHO");
-                llenarListViewSQL(modo);
+                llenarListViewSQL(modo, fun.fecha());
             }
             else
             {
                 if(modo.equals ("3"))
                 {
                     lblModoApp.setText (lblModoApp.getText ().toString ()+"CARGA");
-                    llenarListViewSQL(modo);
+                    llenarListViewSQL(modo, fun.fecha());
                     btnDescargarInfo.setEnabled (true);
                 }
                 else
                 {
                     lblModoApp.setText (lblModoApp.getText ().toString ()+"ENTREGA");
-                    llenarListViewSQL(modo);
+                    llenarListViewSQL(modo, fun.fecha());
                 }
             }
         }
@@ -141,9 +175,6 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
     private void descargarDatosTablaCajaEstado()//descarga los datos almacenados en la tabla Caja Estado
     {
         Toast.makeText (this, "Descargando información disponible.", Toast.LENGTH_SHORT).show ();
-        final boolean[] aviso = {false};/*booleano que retorna true en caso de que la descarga de datos se haya producido
-        y false en caso de que haya ocurrido algún evento*/
-
 
         //se indica la URL a la que tendrá que acceder el dispositivo para descargar los datos
         String url = c.host ()+"read/read_caja_estatus_reporte_descarga.php";
@@ -175,7 +206,8 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
                             JSONArray arr = new JSONArray(response);
                             for (int i = 0; i < arr.length(); i++)
                             {
-                                aviso[0] = true;
+                                System.out.println ("Entra al for para descargar datos");
+                                datosDescargados[0]++;
                                 bdInterna.registrarCajaEstado (conn,arr.getJSONObject(i).getString("cod_barra_caja"),arr.getJSONObject(i).getString("estatus"));
                             }
                         }
@@ -187,7 +219,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
 
                         /*si boolean aviso es true (expresado como if(aviso)), entregará el mensaje siguiente*/
                     }
-                    if(aviso[0])
+                    if(datosDescargados[0]!=0)
                     {
                         Toast.makeText (getApplicationContext (), "MODO OFFLINE ACTIVADO. Puede operar sin conexión a WiFi o datos", Toast.LENGTH_LONG).show ();
                     }
@@ -218,6 +250,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         //activa la cámara para escanear los códigos de barras
         IntentResult result = IntentIntegrator.parseActivityResult (requestCode, resultCode, data);
 
+        llenarListViewSQL (modo,fun.fecha ());
         if (result != null)
         {
             if (result.getContents () == null)
@@ -233,99 +266,28 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
                 }
                 else
                 {
-                    detectarCajaRepetida (result.getContents (),modo);
-                    //llenarListViewSQL (modo);
+                    if(detectarPasoAnteriorSQL (result.getContents (),modo)==true)
+                    {
+                        System.out.println ("paso anterior detectado");
+                    }
+                    else
+                    {
+                        System.out.println ("paso anterior no detectado");
+                    }
+                    llenarListViewSQL(modo, fun.fecha());
                 }
             }
         }
         else
         {
             super.onActivityResult (requestCode, resultCode, data);
+            llenarListViewSQL (modo,fun.fecha ());
         }
     }
 
-    //registro interno en la base de datos
-    private void registro_bd_interna(String cod_barra, ConnectionSQLiteHelper conn)
-    {
-        boolean caja_repetida, paso_anterior, formato;
-        formato = fun.validarFormatoCodigoBarra (cod_barra);
-        //Si el booleano caja_repetida = true, es porque la caja ya está procesada y registrada en la BD*
-        if(formato==true)
-        {
-            if(modo.equals ("1"))
-            {
-                caja_repetida = detectarCajaRepetida (cod_barra,modo);
-                if(caja_repetida)
-                {
-                    fun.dialogoAlerta (this, "¡Aviso!","La caja "+cod_barra+" ya está revisada");
-                }
-                else
-                {
-                    insercion (1,cod_barra);
-                }
-            }
-            else
-            {
-                if(modo.equals ("2"))
-                {
-                    caja_repetida = detectarCajaRepetida (cod_barra,modo);
-                    if(caja_repetida)
-                    {
-                        fun.dialogoAlerta (this, "¡Aviso!","La caja "+cod_barra+" ya está despachada");
-                    }
-                    else
-                    {
-                        detectarPasoAnteriorSQL (modo,cod_barra);
-                    }
-                }
-                else
-                {
-                    if(modo.equals ("3"))
-                    {
-                        caja_repetida = detectarCajaRepetida (cod_barra,modo);
-                        if(caja_repetida)
-                        {
-                            fun.dialogoAlerta (this, "¡Aviso!","La caja "+cod_barra+" ya está cargada en el camión");
-                        }
-                        else
-                        {
-                            //
-                        }
-                    }
-                    else
-                    {
-                        caja_repetida = detectarCajaRepetida (cod_barra,modo);
-                        if(caja_repetida)
-                        {
-                            fun.dialogoAlerta (this, "¡Aviso!","La caja "+cod_barra+" ya está entregada");
-                        }
-                        else
-                        {
-                            /*paso_anterior = detectar_paso_anterior (conn,cod_barra,3);
-                            if(paso_anterior==false)
-                            {
-                                fun.dialogoAlerta (this,"¡Aviso!", "Esta caja no ha pasado por el proceso de carga");
-                            }
-                            else
-                            {
-                                insercion (4,cod_barra);
-                                actualizarEstatusCajaCodBarra (cod_barra,conn,modo);
-                            }*/
-                        }
-                    }
-                }
-            }
-        }
-        else
-        {
-            //aviso que aparece cuando no se cumple con el formato de codigo de barra
-            fun.dialogoAlerta (this, "Error","El formato de código de barra obtenido no coincide con la\n" +
-                    "siguiente estructura: \nXXX-DOC000000-000\n" +
-                    "Dato obtenido: "+cod_barra);
-        }
-    }
+
     //Modificación interna del estado de la caja en la tabla caja_estado
-    private void actualizarEstatusCajaCodBarra(String cod_barra, ConnectionSQLiteHelper conn, String estatus)
+    private void actualizarEstatusCajaCodBarraBDInterna(String cod_barra, ConnectionSQLiteHelper conn, String estatus)
     {
         //llamada al StringTokenizer, que separa la cadena de caracteres obtenida del código de barra. Lo separará por cada "-" que tenga la cadena
         String num_doc = fun.tokenizer (cod_barra, "-");
@@ -359,11 +321,14 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
             {
                 if(response.length ()==0)
                 {
-                    insercion (Integer.parseInt (modo),cod_barra);
+                    insercion (modo,cod_barra);
+                    actualizarEstadoCajaEstadoSQL (cod_barra, status);
+                    actualizarEstatusCajaCodBarraBDInterna (cod_barra, conn,status);
                 }
                 else
                 {
                     fun.dialogoAlerta (ActivityPaqueteEscaneado.this, "¡Aviso!", response);
+                    System.out.println ("entra al else del if response.length==0");
                 }
             }
         }, new Response.ErrorListener() {
@@ -400,22 +365,28 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
             @Override
             public void onResponse(String response)
             {
-
-                System.out.println ("Response paso anterior: "+response);
-
-                r[0] = true;
-                /*if(response.length ()==0)
+                if(response.equals ("ok"))
                 {
-                    insercion (Integer.parseInt (modo),cod_barra);
+                    insercion (modo,cod_barra);
+                    actualizarEstadoCajaEstadoSQL (cod_barra, status);
+                    actualizarEstatusCajaCodBarraBDInterna (cod_barra,conn,status);
                 }
-                else
+                if(response.equals ("0"))
                 {
-                    fun.dialogoAlerta (ActivityPaqueteEscaneado.this, "¡Aviso!", response);
-                }*/
+                    fun.dialogoAlerta (ActivityPaqueteEscaneado.this,"¡Aviso!","La caja "+cod_barra+" ya pasó por el proceso de "+modoParaMostrarEnResponse);
+                    System.out.println ("entra al else del if response.equals==ok");
+                }
+                if(response.equals (""))
+                {
+                    insercion (modo,cod_barra);
+                    actualizarEstadoCajaEstadoSQL (cod_barra, status);
+                    actualizarEstatusCajaCodBarraBDInterna (cod_barra,conn,status);
+                }
             }
         }, new Response.ErrorListener() {
             @Override
-            public void onErrorResponse(VolleyError error) {
+            public void onErrorResponse(VolleyError error)
+            {
                 progressDialog.dismiss();
             }
         });
@@ -446,7 +417,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         lstElementosEscaneados.setAdapter (arrayOpciones);
     }
     //llena el listview con la información que arroje la siguiente consulta a la base de datos interna
-    private void llenarListViewSQL(String status)
+    private void llenarListViewSQL(String status, String fecha)
     {
         System.out.println ("llama al metodo SQL");
 
@@ -457,7 +428,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         progressDialog.setMessage("Cargando...");
         progressDialog.show();
 
-        String url = c.host()+"read/read_caja_estatus_reporte.php?estatus="+status;
+        String url = c.host()+"read/read_caja_estatus_reporte.php?estatus="+status+"&fecha="+fecha;
         RequestQueue queue = Volley.newRequestQueue(this);
 
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url, new Response.Listener<String>()
@@ -521,7 +492,39 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         lstElementosEscaneados.setAdapter (arrayOpciones);
     }
 
-    private void insercion(int modo_numero, String cod_barra)
+    //actualizar estado de la caja en la tabla caja_estado
+    private void actualizarEstadoCajaEstadoSQL(String codBarra, String estatus) {
+        HttpURLConnection conn1, conn2;// conecta con el servicio que registra los datos en la tabla caja_estado
+
+        BufferedReader reader, reader2;
+        String line, line2;
+        StringBuffer responseContent = new StringBuffer ();
+
+        ConnectionDB db = new ConnectionDB ();
+        try {
+            URL url1 = new URL (db.host () + "update/update_caja.php?" +
+                    "cod_barra=" + codBarra +
+                    "&estatus=" + estatus);
+
+
+            //URL1
+            conn1 = (HttpURLConnection) url1.openConnection ();
+            conn1.setRequestMethod ("GET");
+            conn1.setConnectTimeout (10000);
+            conn1.setReadTimeout (10000);
+
+
+        } catch (ProtocolException e) {
+            e.printStackTrace ();
+        } catch (MalformedURLException e) {
+            e.printStackTrace ();
+        } catch (IOException e) {
+            e.printStackTrace ();
+        }
+    }
+
+
+        private void insercion(String modo_numero, String cod_barra)
     {
         String num_doc = fun.tokenizer (cod_barra, "-");
 

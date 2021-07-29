@@ -4,12 +4,13 @@
     require "../conexion/conexion.php";
 
     $estatus = $_GET['estatus'];
+    $fecha = $_GET['fecha'];
 
     $conexion = conexion();
     
     if($conexion)
     {
-        $sql=   "select * from caja_estatus_reporte where estatus = '$estatus'";
+        $sql=   "select * from caja_estatus_reporte where estatus = '$estatus' and fecha = '$fecha'";
         $resultado = mysqli_query(conexion(), $sql);
         while($mostrar = mysqli_fetch_array($resultado))
         {
