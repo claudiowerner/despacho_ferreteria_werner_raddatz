@@ -26,7 +26,10 @@
                 }
                 else
                 {
-                    echo $dif_estado;
+                    if($dif_estado>1)
+                    {
+                        echo "La caja $cod_barra_caja no ha pasado por el paso anterior a ";
+                    }
                 }
             }
             else

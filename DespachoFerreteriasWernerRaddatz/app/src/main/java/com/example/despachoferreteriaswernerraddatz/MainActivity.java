@@ -184,7 +184,6 @@ public class MainActivity extends AppCompatActivity {
 
     //Este método permite ejecutar en segundo plano
     private void tareaAsincrona() {
-        Toast.makeText (this, "Tarea asíncrona iniciada", Toast.LENGTH_SHORT).show ();
         Timer timer = new Timer ("SincronizarBD");
 
 

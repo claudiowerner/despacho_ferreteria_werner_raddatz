@@ -73,13 +73,20 @@ CREATE TABLE `empleado` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 COMMIT;
 
+--claves primarias
 
 ALTER TABLE `caja_estado` ADD PRIMARY KEY(`cod_barra_caja`);
-ALTER TABLE `caja_estatus_reporte` ADD CONSTRAINT `cod_barra_caja_fk` FOREIGN KEY (`cod_barra_caja`) REFERENCES `caja_estado`(`cod_barra_caja`) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE `dispositivo` ADD PRIMARY KEY(`id_dispositivo`);
-ALTER TABLE `caja_estatus_reporte` ADD CONSTRAINT `id_dispositivo_fk` FOREIGN KEY (`id_dispositivo`) REFERENCES `dispositivo`(`id_dispositivo`) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE `empleado` ADD PRIMARY KEY(`id_empleado`);
-ALTER TABLE `dispositivo` ADD CONSTRAINT `id_empleado_fk` FOREIGN KEY (`id_empleado`) REFERENCES `empleado`(`id_empleado`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--claves foráneas
+ALTER TABLE `caja_estatus_reporte` ADD CONSTRAINT `cod_barra_caja_fk` FOREIGN KEY (`cod_barra_caja`) REFERENCES `caja_estado`(`cod_barra_caja`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE `caja_estatus_reporte` ADD CONSTRAINT `id_dispositivo_fk` FOREIGN KEY (`id_dispositivo`) REFERENCES `dispositivo`(`id_dispositivo`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+
+
+
+
 
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

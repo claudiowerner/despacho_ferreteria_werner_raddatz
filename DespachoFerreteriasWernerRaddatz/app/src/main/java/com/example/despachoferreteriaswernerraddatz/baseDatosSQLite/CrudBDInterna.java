@@ -1,28 +1,9 @@
 package com.example.despachoferreteriaswernerraddatz.baseDatosSQLite;
 
-import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteTableLockedException;
-import android.graphics.drawable.Drawable;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
-import android.widget.Toast;
-
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
-import com.example.despachoferreteriaswernerraddatz.ActivityPrimerUso;
-import com.example.despachoferreteriaswernerraddatz.MainActivity;
 import com.example.despachoferreteriaswernerraddatz.funciones.Funciones;
-
-import org.json.JSONArray;
-import org.json.JSONException;
 
 public class CrudBDInterna {
 
@@ -69,5 +50,29 @@ public class CrudBDInterna {
         insert_caja_estado.put ("estatus",estatus);
         //inserción
         db.insert("caja_estado",null,insert_caja_estado);
+    }
+    public void registrarCajaEstadoReporte(ConnectionSQLiteHelper conn,
+                                           String cod_barra,
+                                           String num_doc,
+                                           String fecha,
+                                           String hora,
+                                           String estatus,
+                                           String comentario,
+                                           String id_dispositivo)
+    {
+        SQLiteDatabase db = conn.getWritableDatabase();
+
+        //acciones registro tabla caja_estatus_reporte
+        ContentValues insert_caja_estatus_reporte = new ContentValues ();
+        //acciones de registro en modo REVISIÓN
+        insert_caja_estatus_reporte.put ("cod_barra_caja", cod_barra);
+        insert_caja_estatus_reporte.put ("num_doc", num_doc);
+        insert_caja_estatus_reporte.put ("fecha", fecha);
+        insert_caja_estatus_reporte.put ("hora", hora);
+        insert_caja_estatus_reporte.put ("estatus", estatus);
+        insert_caja_estatus_reporte.put ("comentario", comentario);
+        insert_caja_estatus_reporte.put ("id_dispositivo", id_dispositivo);
+        //inserción
+        db.insert("caja_estatus_reporte",null,insert_caja_estatus_reporte);
     }
 }

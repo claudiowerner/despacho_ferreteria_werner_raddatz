@@ -82,7 +82,7 @@ public class ActivityNomina extends AppCompatActivity {
 
         SQLiteDatabase db = conn.getReadableDatabase ();
         ArrayList array = new ArrayList ();
-        Cursor cursor = db.rawQuery("select * from caja_estatus_reporte where estatus=3 and estatus!=4 group by num_doc",null);
+        Cursor cursor = db.rawQuery("select * from caja_estatus_reporte where estatus=3 and estatus=4 group by num_doc",null);
 
         int id = 0;
         while (cursor.moveToNext ())
