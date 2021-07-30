@@ -178,7 +178,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         Toast.makeText (this, "Descargando codigos de barra...", Toast.LENGTH_SHORT).show ();
 
         //se indica la URL a la que tendrá que acceder el dispositivo para descargar los datos
-        String url = c.host ()+"read/read_caja_estatus_reporte_descarga.php";
+        String url = c.host ()+"read/read_caja_estado.php";
 
         RequestQueue queue = Volley.newRequestQueue(ActivityPaqueteEscaneado.this);
 
@@ -204,9 +204,15 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
 
                             CrudBDInterna bdInterna = new CrudBDInterna();
 
+                            System.out.println ("TABLA CAJA_ESTADO");
+
                             JSONArray arr = new JSONArray(response);
                             for (int i = 0; i < arr.length(); i++)
                             {
+
+                                System.out.println ("cod_barra_caja: "+arr.getJSONObject(i).getString("cod_barra_caja")+
+                                        "estatus: "+arr.getJSONObject(i).getString("estatus"));
+
                                 System.out.println ("Entra al for para descargar datos");
                                 bdInterna.registrarCajaEstado (conn,
                                         arr.getJSONObject(i).getString("cod_barra_caja"),
@@ -316,7 +322,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         /*Activa la cámara para escanear los códigos de barras. Si se ejecuta la sentencia result.getContents(), se
-        * obtiene el código de barra resultante del escaneo*/
+         * obtiene el código de barra resultante del escaneo*/
         IntentResult result = IntentIntegrator.parseActivityResult (requestCode, resultCode, data);
 
         //obtención del código de barra resultante del escaneo
@@ -374,6 +380,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
             if(modo.equals ("1"))
             {
                 insercion (modo,cod_barra);
+                llenarListViewSQL (modo,fun.fecha ());
             }
             else
             {
@@ -387,12 +394,14 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
                 insercion(modo, cod_barra);
                 actualizarEstatusCajaCodBarraBDInterna(cod_barra,conn,modo);
                 actualizarEstadoCajaEstadoSQL(cod_barra,modo);
+                llenarListViewSQL (modo,fun.fecha ());
             }
             if(modo.equals ("3"))
             {
                 insercion(modo, cod_barra);
                 actualizarEstatusCajaCodBarraBDInterna(cod_barra,conn,modo);
                 actualizarEstadoCajaEstadoSQL(cod_barra,modo);
+                llenarListViewSQL (modo,fun.fecha ());
             }
             if(modo.equals ("4"))
             {
@@ -525,7 +534,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
             @Override
             public void onErrorResponse(VolleyError error)
             {
-               progressDialog.dismiss();
+                progressDialog.dismiss();
             }
         });
         queue.add(stringRequest);

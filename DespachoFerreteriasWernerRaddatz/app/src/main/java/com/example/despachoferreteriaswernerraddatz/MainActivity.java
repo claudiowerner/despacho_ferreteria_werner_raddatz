@@ -64,13 +64,13 @@ public class MainActivity extends AppCompatActivity {
         boolean primer_uso = detectar_id_dispositivo (conn);
 
         /*Si se encuentra o detecta que la aplicación ya fue utilizada por primera vez, los botones
-        * de la pantalla principal se activarán*/
+         * de la pantalla principal se activarán*/
         if (primer_uso == true)
         {
             activar_botones ();
         }
         /*Si no se detecta un primer uso, la app arrojará la pantalla de primer uso, donde se tendrá que
-        * registrar el empleado, otorgando un ID (preferentemente el del GESCOM), nombre y apellido*/
+         * registrar el empleado, otorgando un ID (preferentemente el del GESCOM), nombre y apellido*/
         else
         {
             Toast.makeText (this, "Comprobando primer uso...", Toast.LENGTH_SHORT).show ();
@@ -80,17 +80,17 @@ public class MainActivity extends AppCompatActivity {
         }
 
         /*String modo obtiene el modo en el que se encuentra la aplicación. Por ejemplo, si presiona el
-        * botón REVISIÓN, String modo capturará el número 1, y la app realizará las acciones relacionadas
-        * al modo 1 o modo de REVISIÓN.
-        *
-        * Listado de modos y sus significados
-        *
-        * 1: REVISIÓN
-        * 2: DESPACHO
-        * 3: CARGA
-        * 4: ENTREGA
-        *
-        * */
+         * botón REVISIÓN, String modo capturará el número 1, y la app realizará las acciones relacionadas
+         * al modo 1 o modo de REVISIÓN.
+         *
+         * Listado de modos y sus significados
+         *
+         * 1: REVISIÓN
+         * 2: DESPACHO
+         * 3: CARGA
+         * 4: ENTREGA
+         *
+         * */
         final String[] modo = {""};
 
         //acciones botón revisión
@@ -278,7 +278,6 @@ public class MainActivity extends AppCompatActivity {
                     responseContent.append(line);
                 }
             }
-
             //URL2
             URL url2 = new URL (db.host () + "create/create_caja.php?" +
                     "cod_barra=" + codBarra1 +

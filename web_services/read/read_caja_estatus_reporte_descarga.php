@@ -8,7 +8,7 @@
     
     if($conexion)
     {
-        $sql=   "select * from caja_estatus_reporte where estatus = '3'";
+        $sql=   "select * from caja_estatus_reporte";
         $resultado = mysqli_query(conexion(), $sql);
         while($mostrar = mysqli_fetch_array($resultado))
         {

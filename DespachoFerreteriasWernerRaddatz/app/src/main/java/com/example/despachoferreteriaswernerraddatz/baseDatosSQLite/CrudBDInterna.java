@@ -38,7 +38,10 @@ public class CrudBDInterna {
     }
     public void registrarCajaEstado(ConnectionSQLiteHelper conn, String cod_barra, String estatus)
     {
+
         SQLiteDatabase db = conn.getWritableDatabase();
+
+        //db.execSQL ("delete from caja_estado");
 
         //acciones registro tabla caja_estado
         ContentValues insert_caja_estado = new ContentValues();
@@ -51,19 +54,15 @@ public class CrudBDInterna {
         //inserción
         db.insert("caja_estado",null,insert_caja_estado);
     }
-    public void registrarCajaEstadoReporte(ConnectionSQLiteHelper conn,
-                                           String cod_barra,
-                                           String num_doc,
-                                           String fecha,
-                                           String hora,
-                                           String estatus,
-                                           String comentario,
-                                           String id_dispositivo)
+    public void registrarCajaEstadoReporte(ConnectionSQLiteHelper conn, String cod_barra, String num_doc, String fecha, String hora, String estatus, String comentario, String id_dispositivo)
     {
         SQLiteDatabase db = conn.getWritableDatabase();
 
+        //db.execSQL ("delete from caja_estatus_reporte");
+
         //acciones registro tabla caja_estatus_reporte
         ContentValues insert_caja_estatus_reporte = new ContentValues ();
+
         //acciones de registro en modo REVISIÓN
         insert_caja_estatus_reporte.put ("cod_barra_caja", cod_barra);
         insert_caja_estatus_reporte.put ("num_doc", num_doc);
