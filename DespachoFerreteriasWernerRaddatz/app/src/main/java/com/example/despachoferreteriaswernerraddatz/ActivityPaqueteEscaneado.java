@@ -45,7 +45,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
 
     ListView lstElementosEscaneados;
     ImageButton imgButtonEscanear;
-    Button btnDescargarInfo;
+    Button btnDescargarInfo, btnActualizarDatos;
     TextView lblModoApp;
 
     Funciones fun = new Funciones ();
@@ -62,9 +62,6 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
 
     String modo;
     String modoParaMostrarEnResponse;
-
-    int[] datosDescargados = {0};/*booleano que retorna true en caso de que la descarga de datos se haya producido
-        y false en caso de que haya ocurrido algún evento*/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,6 +104,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         lblModoApp = findViewById (R.id.lblModoApp);
         btnDescargarInfo = findViewById (R.id.btnDescargarInfo);
         btnDescargarInfo.setEnabled (false);
+        btnActualizarDatos = findViewById (R.id.btnActualizarDatos);
 
         //rellenar ListView con datos escaneados según el modo de la app
         //llenarListView(modo);
@@ -158,6 +156,16 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
                 integrador.initiateScan ();
             }
         });
+
+        //definicion de acciones btnActualizarDatos
+        btnActualizarDatos.setOnClickListener (new View.OnClickListener () {
+            @Override
+            public void onClick(View v)
+            {
+                llenarListViewSQL (modo,fun.fecha ());
+            }
+        });
+
 
         //botón de descarga de la información
         btnDescargarInfo.setOnClickListener (new View.OnClickListener () {
@@ -363,6 +371,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
                     }
                 }
             }
+            llenarListViewSQL (modo,fun.fecha ());
         }
         else
         {
@@ -371,43 +380,53 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         }
     }
 
-
     private void accionRegistroCodigo(String modo, String cod_barra)
     {
+        llenarListViewSQL (modo,fun.fecha ());
         boolean paso_anterior = detectarPasoAnteriorSQL (cod_barra,modo);
-        if(paso_anterior == false)
+        boolean validar_formato = fun.validarFormatoCodigoBarra (cod_barra);
+
+        if(validar_formato)
         {
-            if(modo.equals ("1"))
+            if(paso_anterior == false)
             {
-                insercion (modo,cod_barra);
-                llenarListViewSQL (modo,fun.fecha ());
+                if(modo.equals ("1"))
+                {
+                    insercion (modo,cod_barra);
+                    llenarListViewSQL (modo,fun.fecha ());
+                }
+                else
+                {
+                    fun.dialogoAlerta (ActivityPaqueteEscaneado.this,"¡Aviso!", "Esta caja no ha pasado por el proceso anterior al de "+modoParaMostrarEnResponse);
+                }
             }
             else
             {
-                fun.dialogoAlerta (ActivityPaqueteEscaneado.this,"¡Aviso!", "Esta caja no ha pasado por el proceso anterior al de "+modoParaMostrarEnResponse);
+                if(modo.equals ("2"))
+                {
+                    insercion(modo, cod_barra);
+                    actualizarEstatusCajaCodBarraBDInterna(cod_barra,conn,modo);
+                    actualizarEstadoCajaEstadoSQL(cod_barra,modo);
+                    llenarListViewSQL (modo,fun.fecha ());
+                }
+                if(modo.equals ("3"))
+                {
+                    insercion(modo, cod_barra);
+                    actualizarEstatusCajaCodBarraBDInterna(cod_barra,conn,modo);
+                    actualizarEstadoCajaEstadoSQL(cod_barra,modo);
+                    llenarListViewSQL (modo,fun.fecha ());
+                }
+                if(modo.equals ("4"))
+                {
+                    insercion (modo, cod_barra);
+                    actualizarEstatusCajaCodBarraBDInterna (cod_barra,conn,modo);
+                }
             }
         }
         else
         {
-            if(modo.equals ("2"))
-            {
-                insercion(modo, cod_barra);
-                actualizarEstatusCajaCodBarraBDInterna(cod_barra,conn,modo);
-                actualizarEstadoCajaEstadoSQL(cod_barra,modo);
-                llenarListViewSQL (modo,fun.fecha ());
-            }
-            if(modo.equals ("3"))
-            {
-                insercion(modo, cod_barra);
-                actualizarEstatusCajaCodBarraBDInterna(cod_barra,conn,modo);
-                actualizarEstadoCajaEstadoSQL(cod_barra,modo);
-                llenarListViewSQL (modo,fun.fecha ());
-            }
-            if(modo.equals ("4"))
-            {
-                insercion (modo, cod_barra);
-                actualizarEstatusCajaCodBarraBDInterna (cod_barra,conn,modo);
-            }
+            fun.dialogoAlerta (ActivityPaqueteEscaneado.this,"¡Aviso!","El código de barra obtenido" +
+                    " no coincide con el formato. \nFormato compatible: XXX-DOC000000-000\nCodigo obtenido: "+cod_barra);
         }
     }
 
