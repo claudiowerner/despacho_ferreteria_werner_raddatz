@@ -6,33 +6,36 @@
  */
 
 
-    function host()
+    /*function host()
     {
-        return 'localhost';
+        $return = 'http://donandres';
     }
     function user()
     {
-        return 'admin_sistemas_wyr';
+        return 'root';
     }
     function pass()
     {
-        return 'adminsistemas123';
+        return 'wyr77admin';
+        //wyr77admin
     }
     function database()
     {
-        return 'bd_despacho_wyr';
-    }
+        //return 'bd_despacho_wyr';
+        return 'gescom';
+    }/*
     function port()
     {
         return '3306';
-    }
+    }*/
 
     //conexion
+
     function conexion()
     {
-        $conexion = mysqli_connect(host(), user(), pass(), database(), port());
+        //$conexion = mysqli_connect("donandres", "root", "wyr77admin", "gescom",3306);
+        $conexion = mysqli_connect("localhost", "root", "", "gescom");
         return $conexion;
-        echo "Conexión: $conexion <br>";
     }
 
 ?>

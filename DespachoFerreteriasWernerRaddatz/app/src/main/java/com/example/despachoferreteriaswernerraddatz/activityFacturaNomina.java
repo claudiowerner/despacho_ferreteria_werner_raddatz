@@ -42,7 +42,7 @@ public class activityFacturaNomina extends AppCompatActivity {
 
         //recepción de valor enviado desde el ActivityNomina.java
         String numDoc = getIntent().getStringExtra("codigo_barra");
-        txtNumDoc.setText ("Documento no.\n"+numDoc);
+        txtNumDoc.setText ("Documento no. "+numDoc);
         int paq_entr = num_paquetes_entregados (numDoc);//captura el numero de paquetes entregados
         int paq_carga = num_paquetes_totales (numDoc);//obtiene el numero de paquetes existentes en el camión
         txtNumPaquetesEntregados.setText ("Entregados "+paq_entr+"/"+paq_carga+"");

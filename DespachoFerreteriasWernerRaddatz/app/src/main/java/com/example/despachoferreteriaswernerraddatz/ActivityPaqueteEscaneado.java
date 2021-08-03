@@ -103,7 +103,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         lstElementosEscaneados=findViewById(R.id.lstElementosEscaneados);
         lblModoApp = findViewById (R.id.lblModoApp);
         btnDescargarInfo = findViewById (R.id.btnDescargarInfo);
-        btnDescargarInfo.setEnabled (false);
+        //btnDescargarInfo.setEnabled (false);
         btnActualizarDatos = findViewById (R.id.btnActualizarDatos);
 
         //rellenar ListView con datos escaneados según el modo de la app
@@ -183,10 +183,15 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
      conectar el dispositivo Android con los servicios web o web services. */
     private void descargarDatosTablaCajaEstado()//descarga los datos almacenados en la tabla Caja Estado
     {
-        Toast.makeText (this, "Descargando codigos de barra...", Toast.LENGTH_SHORT).show ();
 
-        //se indica la URL a la que tendrá que acceder el dispositivo para descargar los datos
+        final ProgressDialog progressDialog;
+        progressDialog = new ProgressDialog(ActivityPaqueteEscaneado.this);
+        progressDialog.setIcon(R.mipmap.ic_launcher);
+        progressDialog.setMessage("Descargando códigos de barra...");
+        progressDialog.show();
+
         String url = c.host ()+"read/read_caja_estado.php";
+        //se indica la URL a la que tendrá que acceder el dispositivo para descargar los datos
 
         RequestQueue queue = Volley.newRequestQueue(ActivityPaqueteEscaneado.this);
 
@@ -198,6 +203,9 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
                 {
                     if (response.length() == 1)
                     {
+                        progressDialog.dismiss ();
+                        fun.dialogoAlerta (getApplicationContext (),"¡Aviso!", "No se pueden visualizar los datos de manera correcta");
+
                         /*no hay registros o el Web Service no es capaz de retornar resultados*/
                     }
                     else
@@ -247,14 +255,21 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
             }
         });
         queue.add(stringRequest);
-
+        progressDialog.dismiss ();
     }
 
     private void descargarDatosTablaCajaEstadoReporte()//descarga los datos almacenados en la tabla Caja Estado
     {
         final int[] datosDescargados = {0}; /*contará la cantidad de vueltas que dará el for al buscar los datos ubicado
         debajo de la llamada al objeto JSONarray*/
-        Toast.makeText (this, "Descargando estados de cajas...", Toast.LENGTH_SHORT).show ();
+
+
+        //progressDialog
+        final ProgressDialog progressDialog;
+        progressDialog = new ProgressDialog(ActivityPaqueteEscaneado.this);
+        progressDialog.setIcon(R.mipmap.ic_launcher);
+        progressDialog.setMessage("Descargando estados de cajas...");
+        progressDialog.show();
 
         //se indica la URL a la que tendrá que acceder el dispositivo para descargar los datos
         String url = c.host ()+"read/read_caja_estatus_reporte_descarga.php";
@@ -323,7 +338,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
             }
         });
         queue.add(stringRequest);
-
+        progressDialog.dismiss ();
     }
 
     //lectura de código de barra de revisión
@@ -385,41 +400,50 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         llenarListViewSQL (modo,fun.fecha ());
         boolean paso_anterior = detectarPasoAnteriorSQL (cod_barra,modo);
         boolean validar_formato = fun.validarFormatoCodigoBarra (cod_barra);
+        boolean caja_repetida=detectar_caja_repetida (cod_barra);
 
         if(validar_formato)
         {
-            if(paso_anterior == false)
+            if(caja_repetida==true)
             {
-                if(modo.equals ("1"))
-                {
-                    insercion (modo,cod_barra);
-                    llenarListViewSQL (modo,fun.fecha ());
-                }
-                else
-                {
-                    fun.dialogoAlerta (ActivityPaqueteEscaneado.this,"¡Aviso!", "Esta caja no ha pasado por el proceso anterior al de "+modoParaMostrarEnResponse);
-                }
+                fun.dialogoAlerta (ActivityPaqueteEscaneado.this, "¡Aviso!", "La caja "+cod_barra+"ya pasó por el proceso de "+modoParaMostrarEnResponse);
             }
             else
             {
-                if(modo.equals ("2"))
+                if(paso_anterior == false)
                 {
-                    insercion(modo, cod_barra);
-                    actualizarEstatusCajaCodBarraBDInterna(cod_barra,conn,modo);
-                    actualizarEstadoCajaEstadoSQL(cod_barra,modo);
-                    llenarListViewSQL (modo,fun.fecha ());
+                    if(modo.equals ("1"))
+                    {
+                        insercion (modo,cod_barra);
+                        llenarListViewSQL (modo,fun.fecha ());
+                    }
+                    else
+                    {
+                        fun.dialogoAlerta (ActivityPaqueteEscaneado.this,"¡Aviso!", "Esta caja no ha pasado por el proceso anterior al de "+modoParaMostrarEnResponse);
+                    }
+                    if(modo.equals ("2"))
+                    {
+                        insercion(modo, cod_barra);
+                        actualizarEstatusCajaCodBarraBDInterna(cod_barra,conn,modo);
+                        actualizarEstadoCajaEstadoSQL(cod_barra,modo);
+                        llenarListViewSQL (modo,fun.fecha ());
+                    }
+                    if(modo.equals ("3"))
+                    {
+                        insercion(modo, cod_barra);
+                        actualizarEstatusCajaCodBarraBDInterna(cod_barra,conn,modo);
+                        actualizarEstadoCajaEstadoSQL(cod_barra,modo);
+                        llenarListViewSQL (modo,fun.fecha ());
+                    }
+                    if(modo.equals ("4"))
+                    {
+                        insercion (modo, cod_barra);
+                        actualizarEstatusCajaCodBarraBDInterna (cod_barra,conn,modo);
+                    }
                 }
-                if(modo.equals ("3"))
+                else
                 {
-                    insercion(modo, cod_barra);
-                    actualizarEstatusCajaCodBarraBDInterna(cod_barra,conn,modo);
-                    actualizarEstadoCajaEstadoSQL(cod_barra,modo);
-                    llenarListViewSQL (modo,fun.fecha ());
-                }
-                if(modo.equals ("4"))
-                {
-                    insercion (modo, cod_barra);
-                    actualizarEstatusCajaCodBarraBDInterna (cod_barra,conn,modo);
+                    fun.dialogoAlerta (ActivityPaqueteEscaneado.this, "¡Aviso!","Este paquete no ha pasado por el paso anterior a "+modoParaMostrarEnResponse);
                 }
             }
         }
@@ -591,6 +615,17 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace ();
         }
+    }
+
+    private boolean detectar_caja_repetida(String cod_barra)
+    {
+        SQLiteDatabase db = conn.getWritableDatabase ();
+        Cursor cursor = db.rawQuery ("select * from caja_estatus_reporte c where c.cod_barra_caja = '"+cod_barra+"' and c.estatus = "+modo, null);
+        if (cursor.moveToFirst ())
+        {
+            return true;
+        }
+        return false;
     }
 
 

@@ -18,10 +18,20 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.example.despachoferreteriaswernerraddatz.baseDatosSQLite.ConnectionDB;
 import com.example.despachoferreteriaswernerraddatz.baseDatosSQLite.ConnectionSQLiteHelper;
+import com.example.despachoferreteriaswernerraddatz.baseDatosSQLite.CrudBDInterna;
 import com.example.despachoferreteriaswernerraddatz.baseDatosSQLite.Sincronizar;
 import com.example.despachoferreteriaswernerraddatz.funciones.Funciones;
+
+import org.json.JSONArray;
+import org.json.JSONException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -37,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
     private Button btnRevision, btnDespacho, btnCarga, btnEntrega, btnNomina;
     Funciones fun = new Funciones ();
 
-    Sincronizar sin = new Sincronizar ();
+    ConnectionDB c = new ConnectionDB ();
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
@@ -52,7 +62,6 @@ public class MainActivity extends AppCompatActivity {
         btnCarga = findViewById (R.id.btnCarga);
         btnEntrega = findViewById (R.id.btnEntrega);
 
-        //
         tareaAsincrona ();
         //llamada a la activity ActivityPrimerUso
         Intent intent = new Intent (this, ActivityPrimerUso.class);
@@ -186,11 +195,13 @@ public class MainActivity extends AppCompatActivity {
     private void tareaAsincrona() {
         Timer timer = new Timer ("SincronizarBD");
 
-
         TimerTask tarea = new TimerTask () {
             @Override
             public void run() {
                 leerCajaEstado ();
+                /*actualizarDatosBDInternaCajaEstado ();
+                actualizarDatosBDInternaCajaEstadoReporteDescarga ();
+                */
             }
         };
 
@@ -323,5 +334,141 @@ public class MainActivity extends AppCompatActivity {
         {
             e.printStackTrace ();
         }
+    }
+    private void actualizarDatosBDInternaCajaEstadoReporteDescarga()
+    {
+        String url = c.host ()+"read/read_caja_estatus_reporte_descarga.php";
+        //se indica la URL a la que tendrá que acceder el dispositivo para descargar los datos
+
+        RequestQueue queue = Volley.newRequestQueue(getApplicationContext ());
+
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
+            @Override
+            //String response: es el que lee o captura la respuesta entregada por el webservice.
+            public void onResponse(String response) {
+                try
+                {
+                    if (response.length() == 1)
+                    {
+                        /*no hay registros o el Web Service no es capaz de retornar resultados*/
+                    }
+                    else
+                    {
+                        Thread.sleep(1000);
+                        try
+                        {
+                            ConnectionSQLiteHelper conn = new ConnectionSQLiteHelper (getApplicationContext (), "bd_interna_despacho_wyr", null, 1);
+
+                            /*JSONArray se encarga de convertir el arreglo JSON obtenido por el webservice a un
+                            dato humanamente legible y entendible */
+
+                            CrudBDInterna bdInterna = new CrudBDInterna();
+
+                            System.out.println ("TABLA CAJA_ESTADO");
+
+                            JSONArray arr = new JSONArray(response);
+                            for (int i = 0; i < arr.length(); i++)
+                            {
+
+                                System.out.println ("cod_barra_caja: "+arr.getJSONObject(i).getString("cod_barra_caja")+
+                                        "estatus: "+arr.getJSONObject(i).getString("estatus"));
+
+                                System.out.println ("Entra al for para descargar datos");
+                                bdInterna.registrarCajaEstadoReporte (conn,
+                                        arr.getJSONObject(i).getString("cod_barra_caja"),
+                                        arr.getJSONObject(i).getString("num_doc"),
+                                        arr.getJSONObject(i).getString("fecha"),
+                                        arr.getJSONObject(i).getString("hora"),
+                                        arr.getJSONObject(i).getString("estatus"),
+                                        arr.getJSONObject(i).getString("comentario"),
+                                        arr.getJSONObject(i).getString("id_dispositivo"));
+                            }
+                        }
+                        catch (JSONException e)
+                        {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                catch (InterruptedException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            /*en caso de ocurrir un evento de error, se ejecutará el siguiente void o método
+             * mostrando el mensaje NO EXISTE CONEXION...*/
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Toast.makeText (getApplicationContext (), "NO EXISTE CONEXIÓN CON EL SERVIDOR", Toast.LENGTH_SHORT).show ();
+            }
+        });
+        queue.add(stringRequest);
+        queue.getCache ().clear ();
+    }private void actualizarDatosBDInternaCajaEstado()
+    {
+        String url = c.host ()+"read/read_caja_estado.php";
+        //se indica la URL a la que tendrá que acceder el dispositivo para descargar los datos
+
+        RequestQueue queue = Volley.newRequestQueue(getApplicationContext ());
+
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
+            @Override
+            //String response: es el que lee o captura la respuesta entregada por el webservice.
+            public void onResponse(String response) {
+                try
+                {
+                    if (response.length() == 1)
+                    {
+                        /*no hay registros o el Web Service no es capaz de retornar resultados*/
+                    }
+                    else
+                    {
+                        Thread.sleep(1000);
+                        try
+                        {
+                            ConnectionSQLiteHelper conn = new ConnectionSQLiteHelper (getApplicationContext (), "bd_interna_despacho_wyr", null, 1);
+
+                            /*JSONArray se encarga de convertir el arreglo JSON obtenido por el webservice a un
+                            dato humanamente legible y entendible */
+
+                            CrudBDInterna bdInterna = new CrudBDInterna();
+
+                            System.out.println ("TABLA CAJA_ESTADO");
+
+                            JSONArray arr = new JSONArray(response);
+                            for (int i = 0; i < arr.length(); i++)
+                            {
+
+                                System.out.println ("cod_barra_caja: "+arr.getJSONObject(i).getString("cod_barra_caja")+
+                                        "estatus: "+arr.getJSONObject(i).getString("estatus"));
+
+                                System.out.println ("Entra al for para descargar datos");
+                                bdInterna.registrarCajaEstado (conn,
+                                        arr.getJSONObject(i).getString("cod_barra_caja"),
+                                        arr.getJSONObject(i).getString("estatus"));
+                            }
+                        }
+                        catch (JSONException e)
+                        {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                catch (InterruptedException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            /*en caso de ocurrir un evento de error, se ejecutará el siguiente void o método
+             * mostrando el mensaje NO EXISTE CONEXION...*/
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Toast.makeText (getApplicationContext (), "NO EXISTE CONEXIÓN CON EL SERVIDOR", Toast.LENGTH_SHORT).show ();
+            }
+        });
+        queue.add(stringRequest);
+        queue.getCache ().clear ();
     }
 }
