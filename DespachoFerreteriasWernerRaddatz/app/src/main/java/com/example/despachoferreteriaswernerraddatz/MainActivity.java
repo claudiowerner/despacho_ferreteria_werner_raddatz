@@ -3,20 +3,16 @@ package com.example.despachoferreteriaswernerraddatz;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.net.UrlQuerySanitizer;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
+
+import okhttp3.*;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -24,12 +20,10 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.example.despachoferreteriaswernerraddatz.baseDatosSQLite.ConnectionDB;
-import com.example.despachoferreteriaswernerraddatz.baseDatosSQLite.ConnectionSQLiteHelper;
-import com.example.despachoferreteriaswernerraddatz.baseDatosSQLite.CrudBDInterna;
-import com.example.despachoferreteriaswernerraddatz.baseDatosSQLite.Sincronizar;
+import com.example.despachoferreteriaswernerraddatz.baseDatosSQLite.*;
 import com.example.despachoferreteriaswernerraddatz.funciones.Funciones;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -42,9 +36,15 @@ import java.net.URL;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import okhttp3.OkHttpClient;
+
 public class MainActivity extends AppCompatActivity {
 
     private Button btnRevision, btnDespacho, btnCarga, btnEntrega, btnNomina;
+    private OkHttpClient client = new OkHttpClient ();
+
+    CrudBDInterna bdInterna = new CrudBDInterna();
+
     Funciones fun = new Funciones ();
 
     ConnectionDB c = new ConnectionDB ();
@@ -62,13 +62,17 @@ public class MainActivity extends AppCompatActivity {
         btnCarga = findViewById (R.id.btnCarga);
         btnEntrega = findViewById (R.id.btnEntrega);
 
-        tareaAsincrona ();
+
         //llamada a la activity ActivityPrimerUso
         Intent intent = new Intent (this, ActivityPrimerUso.class);
 
         //llamada a la clase ConnectionSQLiteHelper.java
         ConnectionSQLiteHelper conn = new ConnectionSQLiteHelper (this, "bd_interna_despacho_wyr", null, 1);
         SQLiteDatabase db = conn.getWritableDatabase ();
+
+        //tarea asíncrona que se encarga de sincronizar cada 2 segundos la base de datos remota con la local
+        tareaAsincrona (conn);
+
         //Detectar primer uso de la aplicación
         boolean primer_uso = detectar_id_dispositivo (conn);
 
@@ -192,7 +196,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     //Este método permite ejecutar en segundo plano
-    private void tareaAsincrona() {
+    private void tareaAsincrona(ConnectionSQLiteHelper conn) {
         Timer timer = new Timer ("SincronizarBD");
 
         TimerTask tarea = new TimerTask () {
@@ -202,6 +206,7 @@ public class MainActivity extends AppCompatActivity {
                 /*actualizarDatosBDInternaCajaEstado ();
                 actualizarDatosBDInternaCajaEstadoReporteDescarga ();
                 */
+                OkHttpBDInternaCajaEstadoReporteDescarga (conn);
             }
         };
 
@@ -231,7 +236,7 @@ public class MainActivity extends AppCompatActivity {
                     cursor.getString (5),/*hora1*/
                     cursor.getString (6),/* estatus2 */
                     cursor.getString (7),/*comentario*/
-                    cursor.getString (8)/*id_dispositiv1o*/);
+                    cursor.getString (8)/*id_dispositivo*/);
             //
             System.out.println ("c: "+cursor.getString (0)+
                     " e: "+cursor.getString (1) +
@@ -335,6 +340,66 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace ();
         }
     }
+
+    private void OkHttpBDInternaCajaEstadoReporteDescarga(ConnectionSQLiteHelper conn)
+    {
+        String url = c.host ()+"read/read_caja_estatus_reporte_descarga.php";
+        //se indica la URL a la que tendrá que acceder el dispositivo para descargar los datos
+
+        okhttp3.Request request = new okhttp3.Request.Builder ()
+                .url (url)
+                .build ();
+        client.newCall (request).enqueue (new Callback () {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                e.printStackTrace ();
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull okhttp3.Response response) throws IOException {
+                if(response.isSuccessful ())
+                {
+                    /*try
+                    {*/
+                        System.out.println (response);
+                        ResponseBody responseBody = response.body ();
+
+                        /*JSONArray array = new JSONArray (response.body ()+"");
+                        for (int i = 0; i < array.length(); i++)
+                        {
+                            System.out.println ("cod_barra_caja: "+array.getJSONObject(i).getString("cod_barra_caja")+
+                                    "estatus: "+array.getJSONObject(i).getString("estatus"));
+
+                            System.out.println ("Entra al for para descargar datos");
+                            bdInterna.registrarCajaEstadoReporte (conn,
+                                    array.getJSONObject(i).getString("cod_barra_caja"),
+                                    array.getJSONObject(i).getString("num_doc"),
+                                    array.getJSONObject(i).getString("fecha"),
+                                    array.getJSONObject(i).getString("hora"),
+                                    array.getJSONObject(i).getString("estatus"),
+                                    array.getJSONObject(i).getString("comentario"),
+                                    array.getJSONObject(i).getString("id_dispositivo"));
+                        }*/
+                    }
+                    /*catch (JSONException e)
+                    {
+                        e.printStackTrace ();
+                        System.out.println ("Error JSON: "+e.getMessage ());
+                    }
+                }*/
+            }
+        });
+        try
+        {
+            okhttp3.Response okResponse = client.newCall (request).execute ();
+
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace ();
+            fun.dialogoAlerta (MainActivity.this, "Error",e.getMessage ());
+        }
+    }
     private void actualizarDatosBDInternaCajaEstadoReporteDescarga()
     {
         String url = c.host ()+"read/read_caja_estatus_reporte_descarga.php";
@@ -346,53 +411,43 @@ public class MainActivity extends AppCompatActivity {
             @Override
             //String response: es el que lee o captura la respuesta entregada por el webservice.
             public void onResponse(String response) {
-                try
+                if (response.length() == 1)
                 {
-                    if (response.length() == 1)
+                    /*no hay registros o el Web Service no es capaz de retornar resultados*/
+                }
+                else
+                {
+                    try
                     {
-                        /*no hay registros o el Web Service no es capaz de retornar resultados*/
-                    }
-                    else
-                    {
-                        Thread.sleep(1000);
-                        try
-                        {
-                            ConnectionSQLiteHelper conn = new ConnectionSQLiteHelper (getApplicationContext (), "bd_interna_despacho_wyr", null, 1);
+                        ConnectionSQLiteHelper conn = new ConnectionSQLiteHelper (getApplicationContext (), "bd_interna_despacho_wyr", null, 1);
 
                             /*JSONArray se encarga de convertir el arreglo JSON obtenido por el webservice a un
                             dato humanamente legible y entendible */
 
-                            CrudBDInterna bdInterna = new CrudBDInterna();
 
-                            System.out.println ("TABLA CAJA_ESTADO");
+                        System.out.println ("TABLA CAJA_ESTADO");
 
-                            JSONArray arr = new JSONArray(response);
-                            for (int i = 0; i < arr.length(); i++)
-                            {
-
-                                System.out.println ("cod_barra_caja: "+arr.getJSONObject(i).getString("cod_barra_caja")+
-                                        "estatus: "+arr.getJSONObject(i).getString("estatus"));
-
-                                System.out.println ("Entra al for para descargar datos");
-                                bdInterna.registrarCajaEstadoReporte (conn,
-                                        arr.getJSONObject(i).getString("cod_barra_caja"),
-                                        arr.getJSONObject(i).getString("num_doc"),
-                                        arr.getJSONObject(i).getString("fecha"),
-                                        arr.getJSONObject(i).getString("hora"),
-                                        arr.getJSONObject(i).getString("estatus"),
-                                        arr.getJSONObject(i).getString("comentario"),
-                                        arr.getJSONObject(i).getString("id_dispositivo"));
-                            }
-                        }
-                        catch (JSONException e)
+                        JSONArray arr = new JSONArray(response);
+                        for (int i = 0; i < arr.length(); i++)
                         {
-                            e.printStackTrace();
+                            System.out.println ("cod_barra_caja: "+arr.getJSONObject(i).getString("cod_barra_caja")+
+                                    "estatus: "+arr.getJSONObject(i).getString("estatus"));
+
+                            System.out.println ("Entra al for para descargar datos");
+                            bdInterna.registrarCajaEstadoReporte (conn,
+                                    arr.getJSONObject(i).getString("cod_barra_caja"),
+                                    arr.getJSONObject(i).getString("num_doc"),
+                                    arr.getJSONObject(i).getString("fecha"),
+                                    arr.getJSONObject(i).getString("hora"),
+                                    arr.getJSONObject(i).getString("estatus"),
+                                    arr.getJSONObject(i).getString("comentario"),
+                                    arr.getJSONObject(i).getString("id_dispositivo"));
                         }
                     }
-                }
-                catch (InterruptedException e)
-                {
-                    e.printStackTrace();
+                    catch (JSONException e)
+                    {
+                        e.printStackTrace();
+                    }
                 }
             }
         }, new Response.ErrorListener() {
@@ -405,7 +460,10 @@ public class MainActivity extends AppCompatActivity {
         });
         queue.add(stringRequest);
         queue.getCache ().clear ();
-    }private void actualizarDatosBDInternaCajaEstado()
+    }
+
+
+    private void actualizarDatosBDInternaCajaEstado()
     {
         String url = c.host ()+"read/read_caja_estado.php";
         //se indica la URL a la que tendrá que acceder el dispositivo para descargar los datos
@@ -431,8 +489,6 @@ public class MainActivity extends AppCompatActivity {
 
                             /*JSONArray se encarga de convertir el arreglo JSON obtenido por el webservice a un
                             dato humanamente legible y entendible */
-
-                            CrudBDInterna bdInterna = new CrudBDInterna();
 
                             System.out.println ("TABLA CAJA_ESTADO");
 
