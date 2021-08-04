@@ -3,11 +3,16 @@ package com.example.despachoferreteriaswernerraddatz;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.job.JobScheduler;
+import android.app.job.JobService;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -38,10 +43,10 @@ import java.util.TimerTask;
 
 import okhttp3.OkHttpClient;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity
+{
 
     private Button btnRevision, btnDespacho, btnCarga, btnEntrega, btnNomina;
-    private OkHttpClient client = new OkHttpClient ();
 
     CrudBDInterna bdInterna = new CrudBDInterna();
 
@@ -61,7 +66,6 @@ public class MainActivity extends AppCompatActivity {
         btnDespacho = findViewById (R.id.btnDespacho);
         btnCarga = findViewById (R.id.btnCarga);
         btnEntrega = findViewById (R.id.btnEntrega);
-
 
         //llamada a la activity ActivityPrimerUso
         Intent intent = new Intent (this, ActivityPrimerUso.class);
@@ -117,7 +121,6 @@ public class MainActivity extends AppCompatActivity {
                 startActivity (intent);
             }
         });
-
 
         btnDespacho.setOnClickListener (new View.OnClickListener () {
             @Override
@@ -198,19 +201,16 @@ public class MainActivity extends AppCompatActivity {
     //Este método permite ejecutar en segundo plano
     private void tareaAsincrona(ConnectionSQLiteHelper conn) {
         Timer timer = new Timer ("SincronizarBD");
-
+        int vuelta =0;
         TimerTask tarea = new TimerTask () {
             @Override
             public void run() {
+                System.out.println ("vuelta: "+(vuelta+1));
                 leerCajaEstado ();
-                /*actualizarDatosBDInternaCajaEstado ();
-                actualizarDatosBDInternaCajaEstadoReporteDescarga ();
-                */
-                OkHttpBDInternaCajaEstadoReporteDescarga (conn);
             }
         };
 
-        timer.schedule (tarea, 1000, 2000);
+        timer.schedule (tarea, 1000, 10000);
     }
 
 
@@ -226,7 +226,7 @@ public class MainActivity extends AppCompatActivity {
         while (cursor.moveToNext ()) {
 
             // se envían los datos recogidos por la BD interna al método que carga los datos a la BD remota
-
+            bdInterna.OkHttpBDInternaCajaEstadoReporteDescarga (conn,MainActivity.this);
 
             actualizarCajaEstadoMySQL (
                     cursor.getString (0),/*cod_barra1*/
@@ -242,8 +242,6 @@ public class MainActivity extends AppCompatActivity {
                     " e: "+cursor.getString (1) +
                     " f: "+ cursor.getString (4));
         }
-        cursor.close ();
-        db.close ();
     }
 
     //actualizar bd remota
@@ -341,65 +339,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void OkHttpBDInternaCajaEstadoReporteDescarga(ConnectionSQLiteHelper conn)
-    {
-        String url = c.host ()+"read/read_caja_estatus_reporte_descarga.php";
-        //se indica la URL a la que tendrá que acceder el dispositivo para descargar los datos
 
-        okhttp3.Request request = new okhttp3.Request.Builder ()
-                .url (url)
-                .build ();
-        client.newCall (request).enqueue (new Callback () {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                e.printStackTrace ();
-            }
-
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull okhttp3.Response response) throws IOException {
-                if(response.isSuccessful ())
-                {
-                    /*try
-                    {*/
-                        System.out.println (response);
-                        ResponseBody responseBody = response.body ();
-
-                        /*JSONArray array = new JSONArray (response.body ()+"");
-                        for (int i = 0; i < array.length(); i++)
-                        {
-                            System.out.println ("cod_barra_caja: "+array.getJSONObject(i).getString("cod_barra_caja")+
-                                    "estatus: "+array.getJSONObject(i).getString("estatus"));
-
-                            System.out.println ("Entra al for para descargar datos");
-                            bdInterna.registrarCajaEstadoReporte (conn,
-                                    array.getJSONObject(i).getString("cod_barra_caja"),
-                                    array.getJSONObject(i).getString("num_doc"),
-                                    array.getJSONObject(i).getString("fecha"),
-                                    array.getJSONObject(i).getString("hora"),
-                                    array.getJSONObject(i).getString("estatus"),
-                                    array.getJSONObject(i).getString("comentario"),
-                                    array.getJSONObject(i).getString("id_dispositivo"));
-                        }*/
-                    }
-                    /*catch (JSONException e)
-                    {
-                        e.printStackTrace ();
-                        System.out.println ("Error JSON: "+e.getMessage ());
-                    }
-                }*/
-            }
-        });
-        try
-        {
-            okhttp3.Response okResponse = client.newCall (request).execute ();
-
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace ();
-            fun.dialogoAlerta (MainActivity.this, "Error",e.getMessage ());
-        }
-    }
     private void actualizarDatosBDInternaCajaEstadoReporteDescarga()
     {
         String url = c.host ()+"read/read_caja_estatus_reporte_descarga.php";

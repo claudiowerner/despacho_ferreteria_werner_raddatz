@@ -1,13 +1,23 @@
 package com.example.despachoferreteriaswernerraddatz;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ComponentActivity;
 
 import android.app.ProgressDialog;
+import android.app.job.JobScheduler;
+import android.app.job.JobService;
+import android.content.BroadcastReceiver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -16,6 +26,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -38,10 +49,9 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
-import java.sql.SQLOutput;
 import java.util.ArrayList;
 
-public class ActivityPaqueteEscaneado extends AppCompatActivity {
+public class ActivityPaqueteEscaneado extends AppCompatActivity{
 
     ListView lstElementosEscaneados;
     ImageButton imgButtonEscanear;
@@ -67,6 +77,44 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate (savedInstanceState);
         setContentView (R.layout.activity_paquete_escaneado);
+
+
+        BroadcastReceiver red = new BroadcastReceiver () {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                final ConnectivityManager connMgr = (ConnectivityManager) context
+                        .getSystemService(Context.CONNECTIVITY_SERVICE);
+
+                final android.net.NetworkInfo wifi = connMgr
+                        .getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+
+                final android.net.NetworkInfo mobile = connMgr
+                        .getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+
+                if(wifi.isAvailable ())
+                {
+                    Toast.makeText (context, "Conectado via wifi", Toast.LENGTH_SHORT).show ();
+                }
+                else
+                {
+                    Toast.makeText (context, "Error wifi", Toast.LENGTH_SHORT).show ();
+                }
+                if(mobile.isAvailable ())
+                {
+                    Toast.makeText (context, "Conectado via datos", Toast.LENGTH_SHORT).show ();
+                }
+                else
+                {
+                    Toast.makeText (context, "Error datos", Toast.LENGTH_SHORT).show ();
+                }
+            }
+        };
+
+
+
+
+
+
 
         //recepción de valor enviado desde el MainActivity.java
         modo = getIntent().getStringExtra("modo");
@@ -107,10 +155,6 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         btnActualizarDatos = findViewById (R.id.btnActualizarDatos);
 
         //rellenar ListView con datos escaneados según el modo de la app
-        //llenarListView(modo);
-
-        llenarListViewSQL (modo, fun.fecha ());
-
         //comparación modo app
         if(modo.equals ("1"))
         {
@@ -298,19 +342,35 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
 
                             CrudBDInterna bdInterna = new CrudBDInterna();
 
-                            JSONArray arr = new JSONArray(response);
-                            for (int i = 0; i < arr.length(); i++)
+                            boolean caja_registrada;
+
+                            JSONArray array = new JSONArray(response);
+                            for (int i = 0; i < array.length(); i++)
                             {
                                 datosDescargados[0]++;
                                 System.out.println ("Entra al for para descargar datos");
-                                bdInterna.registrarCajaEstadoReporte (conn,
-                                        arr.getJSONObject(i).getString("cod_barra_caja"),
-                                        arr.getJSONObject(i).getString("num_doc"),
-                                        arr.getJSONObject(i).getString("fecha"),
-                                        arr.getJSONObject(i).getString("hora"),
-                                        arr.getJSONObject(i).getString("estatus"),
-                                        arr.getJSONObject(i).getString("comentario"),
-                                        arr.getJSONObject(i).getString("id_dispositivo"));
+                                String cod_barra = array.getJSONObject(i).getString("cod_barra_caja");
+                                String st = array.getJSONObject(i).getString("estatus");
+                                caja_registrada = bdInterna.verificarRegistroCajaEstadoReporte (conn,cod_barra,st);
+
+                            /*si no se encuentra la caja, caja_registrada retornará false, debido a que la caja
+                            seleccionada no se encuentra*/
+                                if(caja_registrada==false)
+                                {
+                                    System.out.println ("la caja "+cod_barra+" no existe");
+                                    bdInterna.registrarCajaEstadoReporte (conn,
+                                            array.getJSONObject(i).getString("cod_barra_caja"),
+                                            array.getJSONObject(i).getString("num_doc"),
+                                            array.getJSONObject(i).getString("fecha"),
+                                            array.getJSONObject(i).getString("hora"),
+                                            array.getJSONObject(i).getString("estatus"),
+                                            array.getJSONObject(i).getString("comentario"),
+                                            array.getJSONObject(i).getString("id_dispositivo"));
+                                }
+                                else
+                                {
+                                    System.out.println ("la caja "+cod_barra+" existe");
+                                }
                             }
                             if(datosDescargados[0]!=0)
                             {
@@ -333,6 +393,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
              * mostrando el mensaje NO EXISTE CONEXION...*/
             @Override
             public void onErrorResponse(VolleyError error) {
+                progressDialog.dismiss ();
                 System.out.println ("Error volley: "+error);
                 Toast.makeText (ActivityPaqueteEscaneado.this, "NO EXISTE CONEXIÓN CON EL SERVIDOR", Toast.LENGTH_SHORT).show ();
             }
@@ -406,7 +467,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         {
             if(caja_repetida==true)
             {
-                fun.dialogoAlerta (ActivityPaqueteEscaneado.this, "¡Aviso!", "La caja "+cod_barra+"ya pasó por el proceso de "+modoParaMostrarEnResponse);
+                fun.dialogoAlerta (ActivityPaqueteEscaneado.this, "¡Aviso!", "La caja "+cod_barra+" ya pasó por el proceso de "+modoParaMostrarEnResponse);
             }
             else
             {
@@ -506,7 +567,6 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
 
         int id = 0;
 
-
         //String que obtendrá el número de factura
         while (cursor.moveToNext ())
         {
@@ -536,6 +596,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
             @Override
             public void onResponse(String response)
             {
+                System.out.println ("Response activity escaneado: "+response);
                 try
                 {
                     System.out.println ("entra al try");
@@ -658,5 +719,41 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         insert_caja_estatus_reporte.put ("comentario", "s/c");
         insert_caja_estatus_reporte.put ("id_dispositivo", fun.obtenerAndroidID (this));
         db.insert ("caja_estatus_reporte", null, insert_caja_estatus_reporte);
+    }
+    private BroadcastReceiver networkStateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            ConnectivityManager manager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo ni = manager.getActiveNetworkInfo();
+            onNetworkChange(ni);
+        }
+    };
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        registerReceiver(networkStateReceiver, new IntentFilter (android.net.ConnectivityManager.CONNECTIVITY_ACTION));
+    }
+
+    @Override
+    public void onPause() {
+        unregisterReceiver(networkStateReceiver);
+        super.onPause();
+    }
+
+    private void onNetworkChange(NetworkInfo networkInfo) {
+        //si el dispositivo está conectado
+        if (networkInfo != null) {
+
+            if (networkInfo.getState() == NetworkInfo.State.CONNECTED)
+            {
+                Toast.makeText (this, "Conectado", Toast.LENGTH_SHORT).show();
+            }
+        }
+        //si el dispositivo está desconectado
+        else
+        {
+            Toast.makeText (this, "Desconectado", Toast.LENGTH_SHORT).show();
+        }
     }
 }

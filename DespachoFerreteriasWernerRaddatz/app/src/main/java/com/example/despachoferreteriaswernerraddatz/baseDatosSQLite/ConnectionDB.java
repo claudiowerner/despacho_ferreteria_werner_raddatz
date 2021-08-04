@@ -11,6 +11,6 @@ public class ConnectionDB
         //return "http://192.168.1.177/wyr_app_despacho/web_services/";
 
         //conexion al servidor local
-        return "http://192.168.1.177/wyr_app_despacho/web_services/";
+        return "http://192.168.1.102/ferreteria/web_services/";
     }
 }

@@ -34,7 +34,9 @@
     function conexion()
     {
         //$conexion = mysqli_connect("donandres", "root", "wyr77admin", "gescom",3306);
-        $conexion = mysqli_connect("localhost", "root", "", "gescom");
+        //$conexion = mysqli_connect("localhost", "root", "", "gescom");
+        $conexion = mysqli_connect("localhost", "root", "", "bd_despacho_wyr");
+
         return $conexion;
     }
 

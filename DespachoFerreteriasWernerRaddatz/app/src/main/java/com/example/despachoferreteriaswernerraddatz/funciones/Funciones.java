@@ -1,12 +1,14 @@
 package com.example.despachoferreteriaswernerraddatz.funciones;
 
 import android.app.AlertDialog;
-import android.content.ContentValues;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.provider.Settings;
-import android.telephony.TelephonyManager;
-import android.widget.Toast;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -117,4 +119,6 @@ public class Funciones
         /*si no coincide, retornará false*/
         return false;
     }
+
+
 }
