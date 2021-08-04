@@ -476,13 +476,19 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity {
         SQLiteDatabase db = conn.getWritableDatabase();
 
         int st = Integer.parseInt (status);//convierte la variable String status en tipo numérico
-
+        int st_obtenido = 0;
         Cursor cursor = db.rawQuery("select * from caja_estado where cod_barra_caja ='"+cod_barra+"' and estatus = '"+(st-1)+"'",null);
 
         //Leerá si la consulta es correcta o entrega resultados
         while (cursor.moveToNext ())
         {
             System.out.println ("entra al cursor.moveToNext()");
+            //st_obtenido = Integer.parseInt (cursor.);
+            Toast.makeText (this, "Cursor: "+cursor.getColumnName (4), Toast.LENGTH_SHORT).show ();
+            /*if(st_obtenido>0)
+            {
+                return true;
+            }*/
             return true;
         }
 
