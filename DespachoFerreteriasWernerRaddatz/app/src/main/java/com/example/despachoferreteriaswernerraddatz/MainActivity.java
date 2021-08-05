@@ -206,7 +206,7 @@ public class MainActivity extends AppCompatActivity
             }
         };
 
-        timer.schedule (tarea, 1000, 10000);
+        timer.schedule (tarea, 10000, 10000);
     }
 
 
@@ -468,5 +468,7 @@ public class MainActivity extends AppCompatActivity
         });
         queue.add(stringRequest);
         queue.getCache ().clear ();
+        queue.getCache ().remove (String.valueOf (stringRequest));
+
     }
 }
