@@ -1,11 +1,8 @@
 package com.example.despachoferreteriaswernerraddatz;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ComponentActivity;
 
 import android.app.ProgressDialog;
-import android.app.job.JobScheduler;
-import android.app.job.JobService;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -14,10 +11,8 @@ import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
-import android.net.Network;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -26,7 +21,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -79,41 +73,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity{
         setContentView (R.layout.activity_paquete_escaneado);
 
 
-        BroadcastReceiver red = new BroadcastReceiver () {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                final ConnectivityManager connMgr = (ConnectivityManager) context
-                        .getSystemService(Context.CONNECTIVITY_SERVICE);
-
-                final android.net.NetworkInfo wifi = connMgr
-                        .getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-
-                final android.net.NetworkInfo mobile = connMgr
-                        .getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
-
-                if(wifi.isAvailable ())
-                {
-                    Toast.makeText (context, "Conectado via wifi", Toast.LENGTH_SHORT).show ();
-                }
-                else
-                {
-                    Toast.makeText (context, "Error wifi", Toast.LENGTH_SHORT).show ();
-                }
-                if(mobile.isAvailable ())
-                {
-                    Toast.makeText (context, "Conectado via datos", Toast.LENGTH_SHORT).show ();
-                }
-                else
-                {
-                    Toast.makeText (context, "Error datos", Toast.LENGTH_SHORT).show ();
-                }
-            }
-        };
-
-
-
-
-
+        /**/
 
 
         //recepción de valor enviado desde el MainActivity.java
@@ -396,6 +356,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity{
                 progressDialog.dismiss ();
                 System.out.println ("Error volley: "+error);
                 Toast.makeText (ActivityPaqueteEscaneado.this, "NO EXISTE CONEXIÓN CON EL SERVIDOR", Toast.LENGTH_SHORT).show ();
+                llenarListViewBDInterna (modo);
             }
         });
         queue.add(stringRequest);
@@ -500,6 +461,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity{
                     {
                         insercion (modo, cod_barra);
                         actualizarEstatusCajaCodBarraBDInterna (cod_barra,conn,modo);
+                        llenarListViewBDInterna (modo);
                     }
                 }
                 else
@@ -545,11 +507,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity{
         {
             System.out.println ("entra al cursor.moveToNext()");
             //st_obtenido = Integer.parseInt (cursor.);
-            Toast.makeText (this, "Cursor: "+cursor.getColumnName (4), Toast.LENGTH_SHORT).show ();
-            /*if(st_obtenido>0)
-            {
-                return true;
-            }*/
+
             return true;
         }
 
@@ -559,6 +517,8 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity{
     //llena el listview con la información que arroje la siguiente consulta a la base de datos interna
     private void llenarListViewBDInterna(String status)
     {
+        Toast.makeText (this, "Llenando ListView BD interna", Toast.LENGTH_SHORT).show ();
+        
         SQLiteDatabase db = conn.getReadableDatabase ();
 
         Cursor cursor = db.rawQuery("select * from caja_estatus_reporte where estatus = "+status+" and fecha = '"+fun.fecha ()+"' order by hora desc",null);
@@ -590,6 +550,8 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity{
 
         String url = c.host()+"read/read_caja_estatus_reporte.php?estatus="+status+"&fecha="+fecha;
         RequestQueue queue = Volley.newRequestQueue(this);
+
+        final String[] cod_barra = new String[1];
 
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url, new Response.Listener<String>()
         {
@@ -623,7 +585,11 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity{
                             for(int i = 0; i < arr.length(); i++)
                             {
                                 System.out.println ("rellena el listview con los datos");
+
+                                cod_barra[0] = arr.getJSONObject(i).getString("cod_barra_caja");
+
                                 llenarListViewVacia[i] = "("+(i+1)+") \tCodigo: "+arr.getJSONObject(i).getString("cod_barra_caja")+"\n\t\t\tHora: "+arr.getJSONObject(i).getString("hora");
+
                             }
                             arrayListaCajasEscaneadas = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_expandable_list_item_1, llenarListViewVacia);
                             lstElementosEscaneados.setAdapter(arrayListaCajasEscaneadas);
@@ -645,6 +611,8 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity{
             public void onErrorResponse(VolleyError error)
             {
                 progressDialog.dismiss();
+                System.out.println ("Error Volley llenar ListViewSQL: "+error);
+                llenarListViewBDInterna (modo);
             }
         });
         queue.add(stringRequest);
@@ -720,7 +688,11 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity{
         insert_caja_estatus_reporte.put ("id_dispositivo", fun.obtenerAndroidID (this));
         db.insert ("caja_estatus_reporte", null, insert_caja_estatus_reporte);
     }
-    private BroadcastReceiver networkStateReceiver = new BroadcastReceiver() {
+
+
+
+
+    /*private BroadcastReceiver networkStateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             ConnectivityManager manager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -748,12 +720,15 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity{
             if (networkInfo.getState() == NetworkInfo.State.CONNECTED)
             {
                 Toast.makeText (this, "Conectado", Toast.LENGTH_SHORT).show();
+                llenarListViewSQL (modo,fun.fecha ());
             }
         }
         //si el dispositivo está desconectado
         else
         {
             Toast.makeText (this, "Desconectado", Toast.LENGTH_SHORT).show();
+            llenarListViewBDInterna (modo);
+
         }
-    }
+    }*/
 }
