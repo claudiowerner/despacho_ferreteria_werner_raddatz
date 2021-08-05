@@ -28,7 +28,6 @@ import com.android.volley.toolbox.Volley;
 import com.example.despachoferreteriaswernerraddatz.baseDatosSQLite.*;
 import com.example.despachoferreteriaswernerraddatz.funciones.Funciones;
 
-import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -41,7 +40,6 @@ import java.net.URL;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import okhttp3.OkHttpClient;
 
 public class MainActivity extends AppCompatActivity
 {
@@ -201,11 +199,9 @@ public class MainActivity extends AppCompatActivity
     //Este método permite ejecutar en segundo plano
     private void tareaAsincrona(ConnectionSQLiteHelper conn) {
         Timer timer = new Timer ("SincronizarBD");
-        int vuelta =0;
         TimerTask tarea = new TimerTask () {
             @Override
             public void run() {
-                System.out.println ("vuelta: "+(vuelta+1));
                 leerCajaEstado ();
             }
         };
@@ -236,7 +232,8 @@ public class MainActivity extends AppCompatActivity
                     cursor.getString (5),/*hora1*/
                     cursor.getString (6),/* estatus2 */
                     cursor.getString (7),/*comentario*/
-                    cursor.getString (8)/*id_dispositivo*/);
+                    cursor.getString (8)/*id_dispositivo*/,
+                    conn/*ConnectionsqliteHelper*/);
             //
             System.out.println ("c: "+cursor.getString (0)+
                     " e: "+cursor.getString (1) +
@@ -252,7 +249,8 @@ public class MainActivity extends AppCompatActivity
                                            String hora,
                                            String estatus2,
                                            String comentario,
-                                           String id_dispositivo1) {
+                                           String id_dispositivo1,
+                                           ConnectionSQLiteHelper sqLiteHelper) {
 
         HttpURLConnection conn1, conn2;// conecta con el servicio que registra los datos en la tabla caja_estado
 
@@ -337,7 +335,11 @@ public class MainActivity extends AppCompatActivity
         {
             e.printStackTrace ();
         }
+        bdInterna.OkHttpBDInternaCajaEstadoReporteDescarga (sqLiteHelper,MainActivity.this);
+        actualizarDatosBDInternaCajaEstado ();
+        actualizarDatosBDInternaCajaEstadoReporteDescarga ();
     }
+
 
 
     private void actualizarDatosBDInternaCajaEstadoReporteDescarga()

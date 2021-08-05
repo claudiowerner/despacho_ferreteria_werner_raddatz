@@ -156,8 +156,6 @@ public class CrudBDInterna {
         {
             return true;
         }
-
-
         return false;
     }
 

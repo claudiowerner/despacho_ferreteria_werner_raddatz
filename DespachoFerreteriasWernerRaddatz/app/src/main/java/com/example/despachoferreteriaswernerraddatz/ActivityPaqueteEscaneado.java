@@ -50,7 +50,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity{
     ListView lstElementosEscaneados;
     ImageButton imgButtonEscanear;
     Button btnDescargarInfo, btnActualizarDatos;
-    TextView lblModoApp;
+    TextView lblModoApp, lblDocumentos;
 
     Funciones fun = new Funciones ();
 
@@ -71,9 +71,6 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate (savedInstanceState);
         setContentView (R.layout.activity_paquete_escaneado);
-
-
-        /**/
 
 
         //recepción de valor enviado desde el MainActivity.java
@@ -110,9 +107,11 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity{
         imgButtonEscanear = findViewById (R.id.imgButtonEscanear);
         lstElementosEscaneados=findViewById(R.id.lstElementosEscaneados);
         lblModoApp = findViewById (R.id.lblModoApp);
+        lblDocumentos = findViewById (R.id.lblDocumentos);
         btnDescargarInfo = findViewById (R.id.btnDescargarInfo);
         //btnDescargarInfo.setEnabled (false);
         btnActualizarDatos = findViewById (R.id.btnActualizarDatos);
+
 
         //rellenar ListView con datos escaneados según el modo de la app
         //comparación modo app
@@ -419,6 +418,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity{
 
     private void accionRegistroCodigo(String modo, String cod_barra)
     {
+        insercion (modo,cod_barra);
         llenarListViewSQL (modo,fun.fecha ());
         boolean paso_anterior = detectarPasoAnteriorSQL (cod_barra,modo);
         boolean validar_formato = fun.validarFormatoCodigoBarra (cod_barra);
@@ -541,12 +541,14 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity{
     {
         System.out.println ("llama al metodo SQL");
 
-        //progressDialog
+        /*//progressDialog
         final ProgressDialog progressDialog;
         progressDialog = new ProgressDialog(ActivityPaqueteEscaneado.this);
         progressDialog.setIcon(R.mipmap.ic_launcher);
         progressDialog.setMessage("Cargando...");
-        progressDialog.show();
+        progressDialog.show();*/
+
+        lblDocumentos.setText (lblDocumentos.getText ().toString ()+" (Cargando...)");
 
         String url = c.host()+"read/read_caja_estatus_reporte.php?estatus="+status+"&fecha="+fecha;
         RequestQueue queue = Volley.newRequestQueue(this);
@@ -562,13 +564,14 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity{
                 try
                 {
                     System.out.println ("entra al try");
-                    progressDialog.show();
+                    /*progressDialog.show();*/
                     ArrayAdapter<String> arrayListaCajasEscaneadas;
                     if(response.length()==1)
                     {
                         System.out.println ("Entra al response.length()==1");
                         Thread.sleep(1000);
-                        progressDialog.dismiss();
+                        /*progressDialog.dismiss();*/
+                        lblDocumentos.setText ("Documentos escaneados");
                         arrayListaCajasEscaneadas = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_expandable_list_item_1, llenarListViewVacia);
                         lstElementosEscaneados.setAdapter(arrayListaCajasEscaneadas);
                     }
@@ -576,7 +579,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity{
                     {
                         System.out.println ("entra al else");
                         Thread.sleep(1000);
-                        progressDialog.dismiss();
+                        /*progressDialog.dismiss();*/
                         try
                         {
                             System.out.println ("entra al try");
@@ -593,7 +596,8 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity{
                             }
                             arrayListaCajasEscaneadas = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_expandable_list_item_1, llenarListViewVacia);
                             lstElementosEscaneados.setAdapter(arrayListaCajasEscaneadas);
-                            progressDialog.dismiss ();
+                            /*progressDialog.dismiss ();*/
+                            lblDocumentos.setText ("Documentos escaneados");
                         }
                         catch(JSONException e)
                         {
@@ -610,8 +614,9 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity{
             @Override
             public void onErrorResponse(VolleyError error)
             {
-                progressDialog.dismiss();
+                /*progressDialog.dismiss();*/
                 System.out.println ("Error Volley llenar ListViewSQL: "+error);
+                lblDocumentos.setText ("Documentos escaneados");
                 llenarListViewBDInterna (modo);
             }
         });
@@ -666,6 +671,7 @@ public class ActivityPaqueteEscaneado extends AppCompatActivity{
 
     private void insercion(String modo_numero, String cod_barra)
     {
+        System.out.println ("insertando datos en bd interna");
         String num_doc = fun.tokenizer (cod_barra, "-");
         SQLiteDatabase db = conn.getWritableDatabase ();
         //acciones registro tabla caja_estado
